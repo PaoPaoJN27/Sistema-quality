@@ -1,0 +1,135 @@
+<%- include('../partials/header', { 
+  title: 'Nuevo pedido - Empleado',
+  headerSubtitle: 'Módulo empleado'
+}) %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <!-- 👇 Columna más ancha para tablets/laptops -->
+    <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-7">
+
+      <% if (success) { %>
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+          <strong>¡Pedido registrado!</strong> El pedido se guardó correctamente.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <% if (error) { %>
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+          <strong>Ups…</strong> Ocurrió un error al registrar el pedido. Intenta de nuevo.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pb-0">
+          <h1 class="h4 text-center mb-1">Registrar pedido</h1>
+          <p class="text-muted text-center small mb-3">
+            Llena los datos del cliente y del pedido. El estado inicial será 
+            <strong>Pendiente</strong>.
+          </p>
+        </div>
+
+        <div class="card-body">
+          <form method="POST" action="/pedidos" class="needs-validation" novalidate>
+
+            <!-- Nombre -->
+            <div class="mb-3">
+              <label for="nombre_cliente" class="form-label">Nombre del cliente</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre_cliente"
+                name="nombre_cliente"
+                required
+              />
+              <div class="invalid-feedback">
+                Por favor ingresa el nombre del cliente.
+              </div>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-3">
+              <label for="telefono_cliente" class="form-label">Teléfono del cliente</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="telefono_cliente"
+                name="telefono_cliente"
+                required
+              />
+              <div class="invalid-feedback">
+                Por favor ingresa un teléfono de contacto.
+              </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+              <label for="descripcion_pedido" class="form-label">Descripción del pedido</label>
+              <textarea
+                class="form-control"
+                id="descripcion_pedido"
+                name="descripcion_pedido"
+                rows="3"
+                required
+              ></textarea>
+              <div class="invalid-feedback">
+                Describe brevemente el pedido.
+              </div>
+            </div>
+
+            <!-- Sucursal -->
+            <div class="mb-3">
+              <label for="sucursal" class="form-label">Sucursal</label>
+              <select
+                class="form-select"
+                id="sucursal"
+                name="sucursal"
+                required
+              >
+                <option value="" selected disabled>Selecciona una sucursal</option>
+                <option value="Plazuela">Plazuela</option>
+                <option value="Centro">Centro</option>
+                <option value="López">López</option>
+              </select>
+              <div class="invalid-feedback">
+                Selecciona la sucursal correspondiente.
+              </div>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-3">
+              <label for="fecha_entrega" class="form-label">Fecha de entrega</label>
+              <input
+                type="date"
+                class="form-control"
+                id="fecha_entrega"
+                name="fecha_entrega"
+                required
+              />
+              <div class="invalid-feedback">
+                Selecciona una fecha de entrega.
+              </div>
+            </div>
+
+            <!-- Botón -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">
+                Registrar pedido
+              </button>
+            </div>
+
+            <p class="text-muted small text-center mt-3 mb-0">
+              La fecha del pedido y el estado inicial (<strong>Pendiente</strong>) se generan automáticamente.
+            </p>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
