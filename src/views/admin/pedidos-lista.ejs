@@ -1,0 +1,478 @@
+<%- include('../partials/header', { 
+  title: 'Panel administrador',
+  headerSubtitle: 'Gestión y control de pedidos.'
+}) %>
+
+<link rel="stylesheet" href="/css/admin-pedidos.css">
+
+<div class="container-fluid my-4 px-4 admin-container">
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Pedidos registrados</h1>
+
+    <a href="/admin/historial" class="btn btn-sm btn-outline-secondary">
+      Ver historial de entregados
+    </a>
+  </div>
+
+  <% 
+    const fs = filtros || {}; 
+
+    function formatDateYMD(str) {
+      if (!str) return '';
+      const onlyDate = String(str).split('T')[0];
+      const [Y, M, D] = onlyDate.split('-');
+      if (!Y || !M || !D) return str;
+      return `${D}/${M}/${Y}`;
+    }
+
+    function shortText(v, n) {
+      if (!v) return '-';
+      const s = String(v);
+      return s.length > n ? (s.slice(0, n) + '…') : s;
+    }
+  %>
+
+  <!-- filtros (igual) -->
+  <form method="GET" class="row g-2 mb-3 align-items-end">
+    <!-- ... (lo de siempre, sin cambios) ... -->
+    <div class="col-6 col-md-3">
+      <label for="f_sucursal" class="form-label mb-1">Sucursal</label>
+      <select name="f_sucursal" id="f_sucursal" class="form-select form-select-sm">
+        <option value="Todas" <%= fs.f_sucursal === 'Todas' || !fs.f_sucursal ? 'selected' : '' %>>Todas</option>
+        <option value="Plazuela" <%= fs.f_sucursal === 'Plazuela' ? 'selected' : '' %>>Plazuela</option>
+        <option value="Centro"   <%= fs.f_sucursal === 'Centro'   ? 'selected' : '' %>>Centro</option>
+        <option value="López"    <%= fs.f_sucursal === 'López'    ? 'selected' : '' %>>López</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <label for="f_estado" class="form-label mb-1">Estado</label>
+      <select name="f_estado" id="f_estado" class="form-select form-select-sm">
+        <option value="Todos"    <%= fs.f_estado === 'Todos' || !fs.f_estado ? 'selected' : '' %>>Todos</option>
+        <option value="No iniciado"  <%= fs.f_estado === 'No iniciado'  ? 'selected' : '' %>>No iniciado</option>
+        <option value="En proceso" <%= fs.f_estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
+        <option value="Terminado"  <%= fs.f_estado === 'Terminado'  ? 'selected' : '' %>>Terminado</option>
+        <option value="Cancelado"  <%= fs.f_estado === 'Cancelado'  ? 'selected' : '' %>>Cancelado</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="f_desde" class="form-label mb-1 d-flex align-items-center gap-1">
+        Desde
+        <span class="help-qmark" data-bs-toggle="tooltip" data-bs-placement="top"
+          title="El rango de fechas corresponde únicamente a la fecha del pedido">?</span>
+      </label>
+      <input type="date" id="f_desde" name="f_desde" class="form-control form-control-sm"
+        value="<%= fs.f_desde || '' %>">
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label for="f_hasta" class="form-label mb-1 d-flex align-items-center gap-1">
+        Hasta
+        <span class="help-qmark" data-bs-toggle="tooltip" data-bs-placement="top"
+          title="El rango de fechas corresponde únicamente a la fecha del pedido">?</span>
+      </label>
+      <input type="date" id="f_hasta" name="f_hasta" class="form-control form-control-sm"
+        value="<%= fs.f_hasta || '' %>">
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label for="f_q" class="form-label mb-1">Buscar</label>
+      <input type="text" id="f_q" name="f_q" class="form-control form-control-sm"
+        placeholder="Buscar por Folio" value="<%= fs.f_q || '' %>">
+    </div>
+
+    <div class="col-12 mt-2 d-flex gap-2">
+      <button type="submit" class="btn btn-sm btn-primary">Aplicar filtros</button>
+      <a href="/admin" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+
+  <% if (!pedidos || pedidos.length === 0) { %>
+    <p class="text-muted">No hay pedidos registrados con estos filtros.</p>
+  <% } else { %>
+
+    <%
+      const firstIndex = total === 0 ? 0 : ((page - 1) * pageSize + 1);
+      const lastIndex = Math.min(page * pageSize, total);
+    %>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <p class="mb-0 small text-muted">
+        Mostrando <%= firstIndex %>–<%= lastIndex %> de <%= total %> pedidos
+      </p>
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- ... paginación / limit (igual) ... -->
+        <form method="GET" class="d-flex align-items-center">
+          <input type="hidden" name="f_sucursal" value="<%= fs.f_sucursal || '' %>">
+          <input type="hidden" name="f_estado"   value="<%= fs.f_estado   || '' %>">
+          <input type="hidden" name="f_desde"    value="<%= fs.f_desde    || '' %>">
+          <input type="hidden" name="f_hasta"    value="<%= fs.f_hasta    || '' %>">
+          <input type="hidden" name="f_q"        value="<%= fs.f_q        || '' %>">
+          <input type="hidden" name="page"       value="1">
+
+          <label for="f_limit_top" class="form-label mb-0 me-1 small">Mostrar</label>
+          <select name="f_limit" id="f_limit_top" class="form-select form-select-sm w-auto"
+            onchange="this.form.submit()">
+            <option value="10"  <%= (fs.f_limit || 10) == 10  ? 'selected' : '' %>>10</option>
+            <option value="15"  <%= (fs.f_limit || 10) == 15  ? 'selected' : '' %>>15</option>
+            <option value="30"  <%= (fs.f_limit || 10) == 30  ? 'selected' : '' %>>30</option>
+            <option value="50"  <%= (fs.f_limit || 10) == 50  ? 'selected' : '' %>>50</option>
+            <option value="100" <%= (fs.f_limit || 10) == 100 ? 'selected' : '' %>>100</option>
+          </select>
+        </form>
+
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin?f_sucursal=<%= fs.f_sucursal || '' %>&f_estado=<%= fs.f_estado || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page - 1 %>">&laquo;</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">Página <%= page %> de <%= totalPages %></span>
+            </li>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin?f_sucursal=<%= fs.f_sucursal || '' %>&f_estado=<%= fs.f_estado || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page + 1 %>">&raquo;</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <div class="table-nav" data-table-nav="admin">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
+    </div>
+
+    <div class="table-responsive admin-table-wrapper" id="adminTableWrapper">
+      <table class="table table-striped table-hover align-middle admin-table">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="text-nowrap sticky-folio">Folio</th>
+            <th scope="col" class="text-nowrap">Cliente</th>
+            <th scope="col" class="text-nowrap">Teléfono</th>
+            <th scope="col" class="admin-th-resizable">
+              <span class="admin-th-label">Descripción</span>
+              <span class="admin-col-resizer"></span>
+            </th>
+            <th scope="col" class="text-nowrap">Sucursal</th>
+            <th scope="col" class="text-nowrap">Factura</th>
+            <th scope="col" class="text-nowrap">Total</th>
+            <th scope="col" class="text-nowrap">Anticipo</th>
+            <th scope="col" class="text-nowrap">Resto</th>
+            <th scope="col" class="text-nowrap">Encargado</th>
+            <th scope="col" class="text-nowrap">Fecha pedido</th>
+            <th scope="col" class="text-nowrap">Fecha entrega</th>
+
+            <!-- ✅ NUEVOS -->
+            <th scope="col" class="text-nowrap">Impreso</th>
+            <th scope="col" class="text-nowrap">Entregado</th>
+            <th scope="col" class="text-nowrap">Obs</th>
+            <th scope="col" class="text-nowrap">Carpeta</th>
+            <th scope="col" class="text-nowrap">Archivo</th>
+            <th scope="col" class="text-nowrap">PC</th>
+
+            <th scope="col" class="text-nowrap">Estado</th>
+            <th scope="col" class="text-end text-nowrap">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% pedidos.forEach(p => { %>
+            <tr>
+              <td class="text-nowrap sticky-folio"><%= p.folio_num ? p.folio_num : '-' %></td>
+
+              <td class="text-nowrap"><%= p.nombre_cliente || '-' %></td>
+              <td class="text-nowrap"><%= p.telefono_cliente || '-' %></td>
+
+              <td class="admin-col-desc">
+  <%
+    // Normalizar items_json
+    let items = [];
+    try {
+      if (Array.isArray(p.items_json)) items = p.items_json;
+      else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
+    } catch (e) { items = []; }
+
+    // Filtrar válidos
+    const validItems = (items || []).filter(i =>
+      i &&
+      Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
+      String(i.descripcion || '').trim() !== '' &&
+      Number.isFinite(Number(i.total)) && Number(i.total) >= 0
+    );
+
+    // 👉 Cantidad + descripción en renglones
+    const itemsHtml = validItems
+      .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
+      .join('<br>');
+  %>
+
+  <% if (itemsHtml) { %>
+    <%- itemsHtml %>
+  <% } else if (p.descripcion_pedido) { %>
+    <%= p.descripcion_pedido %>
+  <% } else { %>
+    -
+  <% } %>
+</td>
+
+
+              <td class="text-nowrap"><%= p.sucursal || '-' %></td>
+              <td class="text-nowrap"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
+
+              <td class="text-nowrap">
+                <% if (p.total && Number(p.total) !== 0) { %>
+                  $ <%= Number(p.total).toFixed(2) %>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+
+              <td class="text-nowrap">
+                <% if (p.anticipo && Number(p.anticipo) !== 0) { %>
+                  $ <%= Number(p.anticipo).toFixed(2) %>
+                <% } else { %>
+                  $ 0.00
+                <% } %>
+              </td>
+
+              <td class="text-nowrap">
+                <% if (p.resto && Number(p.resto) !== 0) { %>
+                  $ <%= Number(p.resto).toFixed(2) %>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+
+              <td class="text-nowrap"><%= p.encargado || '-' %></td>
+
+              <td class="text-nowrap"><%= p.fecha_pedido ? formatDateYMD(p.fecha_pedido) : '-' %></td>
+              <td class="text-nowrap"><%= p.fecha_entrega ? formatDateYMD(p.fecha_entrega) : '-' %></td>
+
+              <!-- ✅ NUEVOS -->
+              <td class="text-nowrap">
+                <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
+                  <%= p.trabajo_impreso ? 'Sí' : 'No' %>
+                </span>
+              </td>
+
+              <td class="text-nowrap">
+                <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
+                  <%= p.trabajo_entregado ? 'Sí' : 'No' %>
+                </span>
+              </td>
+
+              <td class="admin-col-desc">
+                <span title="<%= p.observaciones || '' %>"><%= shortText(p.observaciones, 50) %></span>
+              </td>
+
+              <td class="text-nowrap"><%= p.archivo_carpeta || '-' %></td>
+              <td class="text-nowrap"><%= p.archivo_nombre || '-' %></td>
+              <td class="text-nowrap"><%= p.archivo_computadora || '-' %></td>
+
+              <td class="text-nowrap">
+                <%
+                  const estado = p.estado || 'No iniciado';
+                  let badgeClass = 'bg-secondary';
+                  if (estado === 'No iniciado') badgeClass = 'bg-primary';
+                  if (estado === 'En proceso') badgeClass = 'bg-warning text-dark';
+                  if (estado === 'Terminado') badgeClass = 'bg-success';
+                  if (estado === 'Cancelado') badgeClass = 'bg-danger';
+                %>
+                <span class="badge <%= badgeClass %>"><%= estado %></span>
+              </td>
+
+              <td class="text-end text-nowrap">
+                <form action="/admin/<%= p.id %>/estado" method="POST" class="d-inline-flex gap-2 align-items-center">
+                  <select name="nuevoEstado" class="form-select form-select-sm w-auto">
+                    <option value="No iniciado"  <%= estado === 'No iniciado'  ? 'selected' : '' %>>No iniciado</option>
+                    <option value="En proceso" <%= estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
+                    <option value="Terminado"  <%= estado === 'Terminado'  ? 'selected' : '' %>>Terminado</option>
+                    <option value="Cancelado"  <%= estado === 'Cancelado'  ? 'selected' : '' %>>Cancelado</option>
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Actualizar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-nav" data-table-nav="admin-bottom">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <p class="mb-0 small text-muted">
+        Mostrando <%= firstIndex %>–<%= lastIndex %> de <%= total %> pedidos
+      </p>
+
+      <!-- ... (tu paginación abajo igual, sin cambios) ... -->
+      <div class="d-flex align-items-center gap-2">
+        <form method="GET" class="d-flex align-items-center">
+          <input type="hidden" name="f_sucursal" value="<%= fs.f_sucursal || '' %>">
+          <input type="hidden" name="f_estado"   value="<%= fs.f_estado   || '' %>">
+          <input type="hidden" name="f_desde"    value="<%= fs.f_desde    || '' %>">
+          <input type="hidden" name="f_hasta"    value="<%= fs.f_hasta    || '' %>">
+          <input type="hidden" name="f_q"        value="<%= fs.f_q        || '' %>">
+          <input type="hidden" name="page"       value="1">
+
+          <label for="f_limit_bottom" class="form-label mb-0 me-1 small">Mostrar</label>
+          <select name="f_limit" id="f_limit_bottom" class="form-select form-select-sm w-auto"
+            onchange="this.form.submit()">
+            <option value="10"  <%= (fs.f_limit || 10) == 10  ? 'selected' : '' %>>10</option>
+            <option value="15"  <%= (fs.f_limit || 10) == 15  ? 'selected' : '' %>>15</option>
+            <option value="30"  <%= (fs.f_limit || 10) == 30  ? 'selected' : '' %>>30</option>
+            <option value="50"  <%= (fs.f_limit || 10) == 50  ? 'selected' : '' %>>50</option>
+            <option value="100" <%= (fs.f_limit || 10) == 100 ? 'selected' : '' %>>100</option>
+          </select>
+        </form>
+
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin?f_sucursal=<%= fs.f_sucursal || '' %>&f_estado=<%= fs.f_estado || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page - 1 %>">&laquo;</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">Página <%= page %> de <%= totalPages %></span>
+            </li>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin?f_sucursal=<%= fs.f_sucursal || '' %>&f_estado=<%= fs.f_estado || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page + 1 %>">&raquo;</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+  <% } %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+  });
+</script>
+
+<!-- tus scripts de resize + scroll se quedan igual -->
+<script>
+  (function () {
+    const th = document.querySelector('th.admin-th-resizable');
+    if (!th) return;
+
+    const resizer = th.querySelector('.admin-col-resizer');
+    const table = th.closest('table');
+    if (!resizer || !table) return;
+
+    const MIN_WIDTH = 200;
+    const MAX_WIDTH = 900;
+
+    let startX = 0;
+    let startWidth = 0;
+
+    resizer.addEventListener('mousedown', function (e) {
+      startX = e.pageX;
+      startWidth = th.offsetWidth;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      e.preventDefault();
+    });
+
+    function onMouseMove(e) {
+      const dx = e.pageX - startX;
+      let newWidth = startWidth + dx;
+      newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth));
+
+      th.style.width = newWidth + 'px';
+
+      const index = Array.prototype.indexOf.call(th.parentNode.children, th);
+      table.querySelectorAll('tbody tr').forEach((row) => {
+        const cell = row.children[index];
+        if (cell) cell.style.width = newWidth + 'px';
+      });
+
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+  })();
+</script>
+
+<script>
+  (function () {
+    const wrapper = document.getElementById('adminTableWrapper');
+    if (!wrapper) return;
+
+    const navs = document.querySelectorAll('.table-nav');
+    if (!navs.length) return;
+
+    const STEP = () => Math.max(260, Math.floor(wrapper.clientWidth * 0.75));
+
+    function hasOverflowX(el) {
+      return el.scrollWidth > el.clientWidth + 1;
+    }
+
+    function updateNav(nav) {
+      const btnL = nav.querySelector('[data-scroll="left"]');
+      const btnR = nav.querySelector('[data-scroll="right"]');
+
+      const overflow = hasOverflowX(wrapper);
+
+      nav.style.display = overflow ? 'flex' : 'none';
+      if (!overflow) return;
+
+      const atStart = wrapper.scrollLeft <= 0;
+      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
+
+      btnL.disabled = atStart;
+      btnR.disabled = atEnd;
+    }
+
+    function updateAllNavs() {
+      navs.forEach(updateNav);
+    }
+
+    navs.forEach((nav) => {
+      nav.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-scroll]');
+        if (!btn) return;
+
+        const dir = btn.getAttribute('data-scroll');
+        const amount = STEP();
+
+        wrapper.scrollBy({
+          left: dir === 'left' ? -amount : amount,
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    wrapper.addEventListener('scroll', () => updateAllNavs());
+    window.addEventListener('resize', () => updateAllNavs());
+
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => updateAllNavs());
+      ro.observe(wrapper);
+    }
+
+    document.addEventListener('DOMContentLoaded', updateAllNavs);
+    updateAllNavs();
+  })();
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,15 +1,37 @@
-body {
-  min-height: 100vh;
+/* 1) En desktop NO queremos scroll horizontal del body */
+@media (min-width: 992px) {
+  html, body {
+    overflow-x: hidden;
+  }
 }
 
-.card {
-  border-radius: 1rem;
+/* 2) En tablet/cel sí se permite scroll horizontal (si hace falta) */
+@media (max-width: 991.98px) {
+  html, body {
+    overflow-x: auto;
+  }
 }
 
-.card-header {
-  border-bottom: none;
+/* 3) En pantallas menores a 1400 usa todo el ancho disponible */
+@media (max-width: 1399.98px) {
+  .admin-container {
+    max-width: none !important;
+    margin: 0 !important;
+  }
 }
 
-.btn-primary {
-  border-radius: 999px;
+/* 4) IMPORTANTE: NO aplastes la tabla */
+.admin-table {
+  table-layout: auto; /* <- quita el fixed */
+}
+
+/* 5) NO rompas el texto por defecto (esto evita Folio en vertical) */
+.admin-table th,
+.admin-table td {
+  white-space: nowrap; /* default: mantiene encabezados bonitos */
+}
+
+/* 6) PERO deja que la descripción sí pueda partir (opcional, recomendado) */
+.admin-col-desc {
+  white-space: normal !important;
 }

@@ -1,0 +1,176 @@
+/* public/css/admin-pedidos.css */
+
+/* ==== Panel admin ancho ==== */
+.admin-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.admin-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+/* Descripción con ancho base cómodo */
+.admin-col-desc {
+  width: clamp(260px, 28vw, 700px);
+  max-width: 700px;
+  white-space: nowrap;
+}
+
+/* Evitar que datos cortos se expandan demasiado */
+.admin-table td.text-nowrap,
+.admin-table th.text-nowrap {
+  white-space: nowrap;
+}
+
+/* ==== Columna redimensionable ==== */
+.admin-th-resizable {
+  position: relative;
+  white-space: nowrap;
+}
+
+.admin-th-label {
+  display: inline-block;
+  padding-right: 8px;
+}
+
+.admin-col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.admin-th-resizable:hover .admin-col-resizer {
+  border-right: 2px solid rgba(0, 0, 0, 0.25);
+}
+
+/* ==== Mini icono de ayuda ? ==== */
+.help-qmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.25);
+  color: rgba(0,0,0,.55);
+  cursor: help;
+  user-select: none;
+}
+.admin-col-desc{
+  width: auto;            /* <- clave */
+  max-width: none;
+  min-width: 160px;       /* opcional: para que no se haga mini */
+  white-space: normal;
+  word-break: break-word; /* para que corte bonito */
+}
+
+/* =========================
+   BOTONES PARA MOVER TABLA
+   ========================= */
+.table-nav {
+  display: none; /* se activa por JS solo si hay overflow real */
+  align-items: center;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin: .25rem 0 .5rem;
+}
+
+.table-nav .btn {
+  line-height: 1;
+  padding: .35rem .55rem;
+}
+
+/* Oculta la barra horizontal pero deja el scroll funcional */
+.admin-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.admin-table-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* =========================
+   Sticky Folio (columna fija)
+   ========================= */
+
+/* Base sticky para TH y TD */
+.admin-table{
+  width: 100%;
+  table-layout: auto;
+
+  /* 🔥 FIX sticky + bootstrap striped (evita “transparencias”) */
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* =========================
+   Sticky Folio (columna fija)
+   ========================= */
+.admin-table th.sticky-folio,
+.admin-table td.sticky-folio{
+  position: sticky;
+  left: 0;
+  width: 80px;
+  min-width: 80px;
+
+  background-color: #fff !important;
+  background-clip: padding-box;
+
+  z-index: 30;
+  box-shadow: 4px 0 8px -6px rgba(0,0,0,.25);
+}
+
+
+/* header del folio (arriba) */
+.admin-table thead th.sticky-folio{
+  background-color: #f8f9fa !important;
+  z-index: 30;
+}
+
+/* Zebra SOLO en el folio (para que combine con striped) */
+.admin-table.table-striped > tbody > tr:nth-of-type(odd) > td.sticky-folio{
+  background-color: #f2f2f2 !important; /* parecido al striped de BS */
+}
+.admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{
+  background-color: #fff !important;
+}
+.items-mini { 
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.items-mini-table th,
+.items-mini-table td {
+  padding: 2px 6px !important;
+  vertical-align: top;
+}
+
+.items-mini-table thead th {
+  font-weight: 600;
+  color: #555;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.items-mini-desc {
+  white-space: normal;
+}
+/* 📱 Ajuste fino para móvil */
+@media (max-width: 768px) {
+  .admin-container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+
+

@@ -1,0 +1,415 @@
+<%- include('../partials/header', {   
+  title: 'Historial de pedidos entregados',
+  headerSubtitle: 'Consulta de pedidos con estado "Terminado".'
+}) %>
+
+<!-- ✅ Para que jale el sticky folio y estilos comunes -->
+<link rel="stylesheet" href="/css/admin-pedidos.css">
+<link rel="stylesheet" href="/css/admin-historial.css">
+
+<div class="container-fluid my-4 px-4 admin-container">
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Historial de pedidos entregados</h1>
+      <p class="mb-0 small text-muted">
+        Mostrando únicamente pedidos con estado
+        <span class="badge bg-success">Terminado</span>.
+      </p>
+    </div>
+
+    <a href="/admin" class="btn btn-sm btn-outline-secondary">
+      Volver al panel de pedidos
+    </a>
+  </div>
+
+  <% 
+    const fs = filtros || {}; 
+
+    function formatDateYMD(str) {
+      if (!str) return '-';
+      const onlyDate = String(str).split('T')[0];
+      const [Y, M, D] = onlyDate.split('-');
+      if (!Y || !M || !D) return str;
+      return `${D}/${M}/${Y}`;
+    }
+
+    function formatCurrency(value) {
+      if (value === null || value === undefined || value === '') return '-';
+      const num = Number(value);
+      if (Number.isNaN(num)) return value;
+      return num.toLocaleString('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 2
+      });
+    }
+
+    function shortText(v, n) {
+      if (!v) return '-';
+      const s = String(v);
+      return s.length > n ? (s.slice(0, n) + '…') : s;
+    }
+  %>
+
+  <!-- FILTROS -->
+  <form method="GET" class="row g-2 mb-3 align-items-end">
+    <div class="col-6 col-md-3">
+      <label class="form-label mb-1">Sucursal</label>
+      <select name="f_sucursal" class="form-select form-select-sm">
+        <option value="Todas" <%= fs.f_sucursal === 'Todas' || !fs.f_sucursal ? 'selected' : '' %>>Todas</option>
+        <option value="Plazuela" <%= fs.f_sucursal === 'Plazuela' ? 'selected' : '' %>>Plazuela</option>
+        <option value="Centro"   <%= fs.f_sucursal === 'Centro'   ? 'selected' : '' %>>Centro</option>
+        <option value="López"    <%= fs.f_sucursal === 'López'    ? 'selected' : '' %>>López</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label mb-1 d-flex align-items-center gap-1">
+        Desde
+        <span class="help-qmark" data-bs-toggle="tooltip" title="Fecha del pedido">?</span>
+      </label>
+      <input type="date" name="f_desde" class="form-control form-control-sm" value="<%= fs.f_desde || '' %>">
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label mb-1 d-flex align-items-center gap-1">
+        Hasta
+        <span class="help-qmark" data-bs-toggle="tooltip" title="Fecha del pedido">?</span>
+      </label>
+      <input type="date" name="f_hasta" class="form-control form-control-sm" value="<%= fs.f_hasta || '' %>">
+    </div>
+
+    <div class="col-12 col-md-3">
+      <label class="form-label mb-1">Buscar</label>
+      <input type="text" name="f_q" class="form-control form-control-sm"
+        placeholder="Buscar por Folio" value="<%= fs.f_q || '' %>">
+    </div>
+
+    <!-- ✅ IMPORTANTE: conservar f_limit cuando aplicas filtros -->
+    <input type="hidden" name="f_limit" value="<%= fs.f_limit || 10 %>">
+
+    <div class="col-12 mt-2 d-flex gap-2">
+      <button class="btn btn-sm btn-primary">Aplicar filtros</button>
+      <a href="/admin/historial" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+
+  <% if (!pedidos || pedidos.length === 0) { %>
+    <p class="text-muted">No hay pedidos entregados.</p>
+  <% } else { %>
+
+    <%
+      const firstIndex = total === 0 ? 0 : ((page - 1) * pageSize + 1);
+      const lastIndex = Math.min(page * pageSize, total);
+    %>
+
+    <!-- =======================
+         TOP: Mostrar + Paginación
+         ======================= -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <p class="mb-0 small text-muted">
+        Mostrando <%= firstIndex %>–<%= lastIndex %> de <%= total %> pedidos entregados
+      </p>
+
+      <div class="d-flex align-items-center gap-2">
+
+        <!-- ✅ Selector "Mostrar" -->
+        <form method="GET" class="d-flex align-items-center">
+          <input type="hidden" name="f_sucursal" value="<%= fs.f_sucursal || '' %>">
+          <input type="hidden" name="f_desde"    value="<%= fs.f_desde    || '' %>">
+          <input type="hidden" name="f_hasta"    value="<%= fs.f_hasta    || '' %>">
+          <input type="hidden" name="f_q"        value="<%= fs.f_q        || '' %>">
+          <input type="hidden" name="page"       value="1">
+
+          <label for="f_limit_top" class="form-label mb-0 me-1 small">Mostrar</label>
+          <select name="f_limit" id="f_limit_top" class="form-select form-select-sm w-auto"
+            onchange="this.form.submit()">
+            <option value="10"  <%= (fs.f_limit || 10) == 10  ? 'selected' : '' %>>10</option>
+            <option value="15"  <%= (fs.f_limit || 10) == 15  ? 'selected' : '' %>>15</option>
+            <option value="30"  <%= (fs.f_limit || 10) == 30  ? 'selected' : '' %>>30</option>
+            <option value="50"  <%= (fs.f_limit || 10) == 50  ? 'selected' : '' %>>50</option>
+            <option value="100" <%= (fs.f_limit || 10) == 100 ? 'selected' : '' %>>100</option>
+          </select>
+        </form>
+
+        <!-- ✅ Paginación -->
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin/historial?f_sucursal=<%= fs.f_sucursal || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page - 1 %>">&laquo;</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">Página <%= page %> de <%= totalPages %></span>
+            </li>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin/historial?f_sucursal=<%= fs.f_sucursal || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page + 1 %>">&raquo;</a>
+            </li>
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+
+    <!-- BOTONES SCROLL (izq/der) -->
+    <div class="table-nav" data-table-nav="historial">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
+    </div>
+
+    <!-- TABLA -->
+    <div id="historialTableWrapper" class="table-responsive admin-table-wrapper">
+      <table class="table table-striped table-hover align-middle admin-table">
+        <thead class="table-light">
+          <tr>
+            <th class="text-nowrap sticky-folio">Folio</th>
+            <th class="text-nowrap">Cliente</th>
+            <th class="text-nowrap">Teléfono</th>
+            <th>Descripción</th>
+            <th class="text-nowrap">Sucursal</th>
+
+            <!-- ✅ NUEVOS (como en /admin) -->
+            <th class="text-nowrap">Factura</th>
+            <th class="text-nowrap">Total</th>
+            <th class="text-nowrap">Anticipo</th>
+            <th class="text-nowrap">Resto</th>
+            <th class="text-nowrap">Encargado</th>
+
+            <th class="text-nowrap">Fecha pedido</th>
+            <th class="text-nowrap">Fecha entrega</th>
+
+            <th class="text-nowrap">Impreso</th>
+            <th class="text-nowrap">Entregado</th>
+            <th class="text-nowrap">Obs</th>
+            <th class="text-nowrap">Carpeta</th>
+            <th class="text-nowrap">Archivo</th>
+            <th class="text-nowrap">PC</th>
+
+            <th class="text-nowrap">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pedidos.forEach(p => { %>
+            <tr>
+              <td class="text-nowrap sticky-folio"><%= p.folio_num || '-' %></td>
+              <td class="text-nowrap"><%= p.nombre_cliente || '-' %></td>
+              <td class="text-nowrap"><%= p.telefono_cliente || '-' %></td>
+
+              <td class="admin-col-desc">
+  <%
+    // Normalizar items_json
+    let items = [];
+    try {
+      if (Array.isArray(p.items_json)) items = p.items_json;
+      else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
+    } catch (e) { items = []; }
+
+    // Filtrar válidos
+    const validItems = (items || []).filter(i =>
+      i &&
+      Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
+      String(i.descripcion || '').trim() !== '' &&
+      Number.isFinite(Number(i.total)) && Number(i.total) >= 0
+    );
+
+    // Texto con saltos de línea
+    const itemsTextHtml = validItems
+      .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
+      .join('<br>');
+  %>
+
+  <% if (validItems.length > 0) { %>
+    <span><%- itemsTextHtml %></span>
+  <% } else if (p.descripcion_pedido) { %>
+    <span title="<%= p.descripcion_pedido %>">
+      <%= p.descripcion_pedido.length > 90 ? p.descripcion_pedido.slice(0, 90) + '…' : p.descripcion_pedido %>
+    </span>
+  <% } else { %>
+    -
+  <% } %>
+</td>
+
+              <td class="text-nowrap"><%= p.sucursal || '-' %></td>
+
+              <!-- ✅ NUEVOS (como en /admin) -->
+              <td class="text-nowrap"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
+
+              <td class="text-nowrap"><%= formatCurrency(p.total) %></td>
+
+              <td class="text-nowrap">
+                <%= (p.anticipo !== null && p.anticipo !== undefined && Number(p.anticipo) !== 0)
+                  ? formatCurrency(p.anticipo)
+                  : '$0.00' %>
+              </td>
+
+              <td class="text-nowrap">
+                <%= (p.resto !== null && p.resto !== undefined && Number(p.resto) !== 0)
+                  ? formatCurrency(p.resto)
+                  : '-' %>
+              </td>
+
+              <td class="text-nowrap"><%= p.encargado || '-' %></td>
+
+              <td class="text-nowrap"><%= formatDateYMD(p.fecha_pedido) %></td>
+              <td class="text-nowrap"><%= formatDateYMD(p.fecha_entrega) %></td>
+
+              <td class="text-nowrap">
+                <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
+                  <%= p.trabajo_impreso ? 'Sí' : 'No' %>
+                </span>
+              </td>
+
+              <td class="text-nowrap">
+                <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
+                  <%= p.trabajo_entregado ? 'Sí' : 'No' %>
+                </span>
+              </td>
+
+              <td class="admin-col-obs">
+                <span title="<%= p.observaciones || '' %>"><%= shortText(p.observaciones, 40) %></span>
+              </td>
+
+              <td class="text-nowrap"><%= p.archivo_carpeta || '-' %></td>
+              <td class="text-nowrap"><%= p.archivo_nombre || '-' %></td>
+              <td class="text-nowrap"><%= p.archivo_computadora || '-' %></td>
+
+              <td class="text-nowrap">
+                <span class="badge bg-success">Terminado</span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BOTONES SCROLL abajo -->
+    <div class="table-nav" data-table-nav="historial-bottom">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
+    </div>
+
+    <!-- =======================
+         BOTTOM: Mostrar + Paginación
+         ======================= -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <p class="mb-0 small text-muted">
+        Mostrando <%= firstIndex %>–<%= lastIndex %> de <%= total %> pedidos entregados
+      </p>
+
+      <div class="d-flex align-items-center gap-2">
+
+        <form method="GET" class="d-flex align-items-center">
+          <input type="hidden" name="f_sucursal" value="<%= fs.f_sucursal || '' %>">
+          <input type="hidden" name="f_desde"    value="<%= fs.f_desde    || '' %>">
+          <input type="hidden" name="f_hasta"    value="<%= fs.f_hasta    || '' %>">
+          <input type="hidden" name="f_q"        value="<%= fs.f_q        || '' %>">
+          <input type="hidden" name="page"       value="1">
+
+          <label for="f_limit_bottom" class="form-label mb-0 me-1 small">Mostrar</label>
+          <select name="f_limit" id="f_limit_bottom" class="form-select form-select-sm w-auto"
+            onchange="this.form.submit()">
+            <option value="10"  <%= (fs.f_limit || 10) == 10  ? 'selected' : '' %>>10</option>
+            <option value="15"  <%= (fs.f_limit || 10) == 15  ? 'selected' : '' %>>15</option>
+            <option value="30"  <%= (fs.f_limit || 10) == 30  ? 'selected' : '' %>>30</option>
+            <option value="50"  <%= (fs.f_limit || 10) == 50  ? 'selected' : '' %>>50</option>
+            <option value="100" <%= (fs.f_limit || 10) == 100 ? 'selected' : '' %>>100</option>
+          </select>
+        </form>
+
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin/historial?f_sucursal=<%= fs.f_sucursal || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page - 1 %>">&laquo;</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">Página <%= page %> de <%= totalPages %></span>
+            </li>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                href="/admin/historial?f_sucursal=<%= fs.f_sucursal || '' %>&f_desde=<%= fs.f_desde || '' %>&f_hasta=<%= fs.f_hasta || '' %>&f_q=<%= fs.f_q || '' %>&f_limit=<%= fs.f_limit || 10 %>&page=<%= page + 1 %>">&raquo;</a>
+            </li>
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+
+  <% } %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      .forEach(el => new bootstrap.Tooltip(el));
+  });
+</script>
+
+<!-- ✅ MISMO JS de scroll izq/der que ya tienes -->
+<script>
+  (function () {
+    const wrapper = document.getElementById('historialTableWrapper');
+    if (!wrapper) return;
+
+    const navs = document.querySelectorAll('.table-nav');
+    if (!navs.length) return;
+
+    const STEP = () => Math.max(260, Math.floor(wrapper.clientWidth * 0.75));
+
+    function hasOverflowX(el) {
+      return el.scrollWidth > el.clientWidth + 1;
+    }
+
+    function updateNav(nav) {
+      const btnL = nav.querySelector('[data-scroll="left"]');
+      const btnR = nav.querySelector('[data-scroll="right"]');
+
+      const overflow = hasOverflowX(wrapper);
+      nav.style.display = overflow ? 'flex' : 'none';
+      if (!overflow) return;
+
+      const atStart = wrapper.scrollLeft <= 0;
+      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
+
+      btnL.disabled = atStart;
+      btnR.disabled = atEnd;
+    }
+
+    function updateAllNavs() {
+      navs.forEach(updateNav);
+    }
+
+    navs.forEach((nav) => {
+      nav.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-scroll]');
+        if (!btn) return;
+
+        const dir = btn.getAttribute('data-scroll');
+        const amount = STEP();
+
+        wrapper.scrollBy({
+          left: dir === 'left' ? -amount : amount,
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    wrapper.addEventListener('scroll', () => updateAllNavs());
+    window.addEventListener('resize', () => updateAllNavs());
+
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => updateAllNavs());
+      ro.observe(wrapper);
+    }
+
+    updateAllNavs();
+  })();
+</script>
+
+<%- include('../partials/footer') %>

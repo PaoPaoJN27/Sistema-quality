@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Pedido <%= (pedido?.folio_num ?? '') %></title>
+
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; padding: 0; }
+
+    /* ✅ A4 horizontal */
+    @page { size: A4 landscape; margin: 0; }
+    html, body { margin: 0; padding: 0; }
+    .sheet { width: 297mm; height: 210mm; overflow: hidden; }
+
+    /* ====== Marco general ====== */
+    .frame {
+      width: 100%;
+      height: 100%;
+      border: 2px solid #111;
+      padding: 6mm;
+      position: relative;
+
+      /* espacio del header superior (NO tocar) */
+      --topH: 16mm;
+
+      /* ✅ AJUSTE para que quepa en 1 hoja */
+      --specH: 88mm;  /* antes 94mm */
+      --itemsH: 58mm; /* antes 68mm */
+    }
+
+    /* ====== HEADER SUPERIOR (NO cambiar tamaño) ====== */
+    .global-header {
+      position: absolute;
+      left: 6mm;
+      right: 6mm;
+      top: 6mm;
+      height: var(--topH);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: start;
+      pointer-events: none;
+    }
+    .gh-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 2mm;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .gh-left .title {
+      border-bottom: 1px solid #111;
+      padding-bottom: 1mm;
+    }
+    .gh-center {
+      text-align: center;
+      line-height: 1;
+    }
+    .gh-center .brand {
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: .5px;
+    }
+    .gh-center .sub {
+      font-size: 10px;
+      font-weight: 700;
+      opacity: .9;
+      margin-top: 1mm;
+      text-transform: uppercase;
+    }
+    .gh-right { }
+
+    /* ====== Layout 2 mitades ====== */
+    .two {
+      display: flex;
+      gap: 6mm;
+      height: 100%;
+    }
+    .half {
+      width: 50%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ====== IZQUIERDA: ESPECIFICACIONES ====== */
+    .spec-box {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--topH);
+      height: var(--specH);
+      border: 1px solid #111;
+      overflow: hidden;
+      background: #fff;
+    }
+    .spec-head {
+      height: 10mm;
+      background: #111;
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      padding: 0 3mm;
+      font-size: 12px;
+    }
+    .spec-body {
+      height: calc(var(--specH) - 10mm);
+    }
+
+    /* ====== Bloques inferiores izquierda ====== */
+    .left-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(var(--topH) + var(--specH) + 3mm); /* antes 4mm */
+      bottom: 0;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 3mm; /* antes 4mm */
+    }
+
+    .trabajo-box {
+      border: 1px solid #111;
+      padding: 2.5mm; /* antes 3mm */
+      position: relative;
+      font-size: 11px;
+    }
+    .trabajo-title {
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 1.5mm; /* antes 2mm */
+    }
+
+    .estado-row {
+      display: flex;
+      gap: 3mm;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5mm; /* antes 2mm */
+    }
+    .estado-pill {
+      border: 1px solid #111;
+      border-radius: 999px;
+      padding: 1mm 2.5mm;
+      font-size: 9.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .estado-pill.on { background: #111; color: #fff; }
+
+    .trabajo-lines .line {
+      display: grid;
+      grid-template-columns: 30mm 1fr;
+      gap: 2mm;
+      margin: 1mm 0; /* antes 1.5mm */
+      align-items: end;
+    }
+    .k { font-weight: 800; text-transform: uppercase; font-size: 10px; }
+    .v {
+      border-bottom: 1px dotted #111;
+      min-height: 4mm;
+      padding-bottom: .5mm;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mini-cb {
+      display: flex;
+      gap: 6mm;
+      margin: 1.5mm 0 2mm 0; /* antes 2mm 0 3mm 0 */
+      font-weight: 800;
+    }
+    .boxcheck {
+      width: 6mm; height: 6mm;
+      border: 1px solid #111;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .archivo-box {
+      border: 1px solid #111;
+      padding: 2.5mm; /* antes 3mm */
+      font-size: 11px;
+    }
+    .archivo-title {
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 1.5mm; /* antes 2mm */
+    }
+
+    /* ====== DERECHA: empuja contenido hacia abajo por header ====== */
+    .right-wrap {
+      padding-top: var(--topH);
+    }
+
+    /* ====== Derecha: Encabezado ====== */
+    .right-head {
+      border: 1px solid #111;
+      padding: 2.5mm; /* antes 3mm */
+      margin-bottom: 1mm; /* antes 2mm */
+    }
+    .right-head .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .right-head .h1 {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-size: 14px;
+      line-height: 1.1;
+    }
+    .right-head .h2 {
+      font-weight: 800;
+      font-size: 12px;
+      margin-top: 1mm;
+    }
+
+    .folio {
+      border: 1px solid #111;
+      padding: 2mm 3mm;
+      font-weight: 900;
+      font-size: 13px;
+      min-width: 26mm;
+      text-align: center;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2mm 4mm;
+      margin-top: 2mm; /* antes 2.5mm */
+      font-size: 11px;
+    }
+    .meta .mline {
+      display: grid;
+      grid-template-columns: 24mm 1fr;
+      gap: 2mm;
+      align-items: end;
+    }
+
+    /* ====== Derecha: tabla items ====== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    th, td {
+      border: 1px solid #111;
+      padding: 2mm;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f1f1;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .items-wrap {
+      border: 1px solid #111;
+      padding: 0;
+      margin-bottom: 1mm; /* antes 2mm */
+    }
+
+    /* ✅ más chico para 1 hoja */
+    .items-row { height: var(--itemsH); }
+
+    /* ====== Derecha: footer ====== */
+    .right-footer {
+      display: grid;
+      grid-template-columns: 1fr 52mm;
+      gap: 2.5mm; /* antes 3mm */
+      align-items: stretch;
+    }
+
+    .factura-box {
+      border: 1px solid #111;
+      padding: 2.5mm; /* antes 3mm */
+      font-size: 11px;
+    }
+    .factura-title {
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 1.5mm; /* antes 2mm */
+    }
+    .factura-checks {
+      display: flex;
+      gap: 10mm;
+      margin: 1.5mm 0 2mm 0; /* antes 2mm 0 3mm 0 */
+      font-weight: 900;
+      align-items: center;
+    }
+
+    .firmas {
+      font-size: 11px;
+      margin-top: 3mm; /* antes 5mm */
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2mm;
+    }
+
+    .totales-box {
+      border: 1px solid #111;
+      padding: 2.5mm; /* antes 3mm */
+      font-size: 11px;
+    }
+    .totrow {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+      padding: 1.5mm 0; /* antes 2mm */
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .totrow:last-child { border-bottom: none; }
+
+    .left-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .doc-meta {
+      font-size: 9.5px;
+      line-height: 1.2;
+    }
+    .gh-right {
+      text-align: right;
+    }
+
+    .doc-meta-right {
+      font-size: 9.5px;
+      line-height: 1.2;
+    }
+
+    .doc-title {
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .doc-sub {
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .doc-line {
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+
+<body>
+  <%
+    const folio = pedido?.folio_num ?? '';
+
+    const fechaHoy = (pedido?.fecha_pedido && String(pedido.fecha_pedido).trim() !== '')
+      ? String(pedido.fecha_pedido).trim()
+      : new Date().toLocaleDateString('sv-SE');
+
+    const rfRaw = (pedido?.requiere_factura ?? pedido?.requiereFactura ?? '').toString().toLowerCase();
+    const requiereFactura = (pedido?.requiere_factura === true) || (rfRaw === 'si' || rfRaw === 'true' || rfRaw === '1');
+
+    const estadoRaw = (pedido?.estado ?? '').toString().trim();
+    const estado = estadoRaw !== '' ? estadoRaw : 'No iniciado';
+
+    const impRaw = (pedido?.trabajo_impreso ?? '').toString().toLowerCase();
+    const entRaw = (pedido?.trabajo_entregado ?? '').toString().toLowerCase();
+    const trabajoImpreso = (pedido?.trabajo_impreso === true) || (impRaw === 'true' || impRaw === '1' || impRaw === 'si');
+    const trabajoEntregado = (pedido?.trabajo_entregado === true) || (entRaw === 'true' || entRaw === '1' || entRaw === 'si');
+
+    function toNum(v) {
+      const n = parseFloat((v ?? '').toString().replace(',', '.'));
+      return Number.isFinite(n) ? n : null;
+    }
+    const totalN = toNum(pedido?.total);
+    const anticipoN = toNum(pedido?.anticipo);
+    const restoN = toNum((pedido?.resto ?? pedido?.resto_preview));
+
+    function money(n) {
+      if (n == null) return '';
+      return n.toFixed(2);
+    }
+
+    // ✅ Items (parse una sola vez)
+    let items = [];
+    try {
+      if (Array.isArray(pedido?.items)) items = pedido.items;
+      else items = JSON.parse(pedido?.items_json || '[]');
+    } catch (e) { items = []; }
+
+    // ✅ Fechas fallback para columna Fecha
+    const entrega = (pedido?.fecha_entrega ?? pedido?.entrega ?? pedido?.fechaEntrega ?? '').toString();
+    const fechaCell = entrega;
+  %>
+
+  <div class="sheet">
+    <div class="frame">
+
+      <div class="global-header">
+        <div class="gh-left">
+          <div class="left-stack">
+            <div class="title">Descripción del Trabajo</div>
+          </div>
+        </div>
+
+        <div class="gh-center">
+          <div class="brand">quality</div>
+          <div class="sub">publicidad</div>
+        </div>
+
+        <div class="gh-right">
+          <div class="doc-meta">
+            <div class="doc-title">RECEPCIÓN DISEÑO</div>
+            <div class="doc-sub">NOTA DE REMISIÓN</div>
+            <div class="doc-line">Publicidad quality@gmail.com</div>
+            <div class="doc-line">R.F.C. ROGF701014N80</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two">
+
+        <!-- IZQUIERDA -->
+        <div class="half">
+
+          <div class="spec-box">
+            <div class="spec-head">ESPECIFICACIONES</div>
+            <div class="spec-body"></div>
+          </div>
+
+          <div class="left-bottom">
+
+            <div class="trabajo-box">
+              <div class="trabajo-title">TRABAJO:</div>
+
+              <div class="estado-row">
+                <span class="estado-pill <%= (estado === 'No iniciado') ? 'on' : '' %>">No iniciado</span>
+                <span class="estado-pill <%= (estado === 'En proceso') ? 'on' : '' %>">En proceso</span>
+                <span class="estado-pill <%= (estado === 'Terminado') ? 'on' : '' %>">Terminado</span>
+              </div>
+
+              <div class="mini-cb">
+                <div style="display:flex; gap:2mm; align-items:center;">
+                  <span class="k" style="font-size:10px;">Trabajo impreso</span>
+                  <span class="boxcheck"><%= trabajoImpreso ? '✓' : '' %></span>
+                </div>
+                <div style="display:flex; gap:2mm; align-items:center;">
+                  <span class="k" style="font-size:10px;">Trabajo entregado</span>
+                  <span class="boxcheck"><%= trabajoEntregado ? '✓' : '' %></span>
+                </div>
+              </div>
+
+              <div class="trabajo-lines">
+                <div class="line">
+                  <div class="k">Observaciones</div>
+                  <div class="v"><%= pedido?.observaciones ?? '' %></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="archivo-box">
+              <div class="archivo-title">¿Dónde se guardó el archivo?</div>
+
+              <div class="trabajo-lines">
+                <div class="line">
+                  <div class="k">Carpeta</div>
+                  <div class="v"><%= pedido?.archivo_carpeta ?? '' %></div>
+                </div>
+                <div class="line">
+                  <div class="k">Archivo</div>
+                  <div class="v"><%= pedido?.archivo_nombre ?? '' %></div>
+                </div>
+                <div class="line">
+                  <div class="k">Computadora</div>
+                  <div class="v"><%= pedido?.archivo_computadora ?? '' %></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- DERECHA -->
+        <div class="half">
+          <div class="right-wrap">
+
+            <div class="right-head">
+              <div class="topline">
+                <div>
+                  <div class="h1">RECEPCIÓN DISEÑO</div>
+                  <div class="h2">NOTA DE REMISIÓN</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:900; font-size:11px; text-transform:uppercase;">Folio</div>
+                  <div class="folio"><%= folio %></div>
+                </div>
+              </div>
+
+              <div class="meta">
+                <div class="mline">
+                  <div class="k">Fecha</div>
+                  <div class="v"><%= fechaHoy %></div>
+                </div>
+                <div class="mline">
+                  <div class="k">Teléfono</div>
+                  <div class="v"><%= pedido?.telefono_cliente ?? '' %></div>
+                </div>
+
+                <div class="mline">
+                  <div class="k">Nombre</div>
+                  <div class="v"><%= pedido?.nombre_cliente ?? '' %></div>
+                </div>
+                <div class="mline">
+                  <div class="k">Encargado</div>
+                  <div class="v"><%= pedido?.encargado ?? '' %></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="items-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:16mm;">Cant.</th>
+                    <th>Descripción</th>
+                    <th style="width:22mm;">Fecha</th>
+                    <th style="width:22mm;">Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr class="items-row">
+
+                    <!-- Cantidad -->
+                    <td style="padding:0;">
+                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                        <% if (items.length === 0) { %>
+                          <div style="padding:2mm;">&nbsp;</div>
+                        <% } else { %>
+                          <% items.forEach((it) => { %>
+                            <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
+                              <%= it?.cantidad ?? '' %>
+                            </div>
+                          <% }) %>
+                        <% } %>
+                      </div>
+                    </td>
+
+                    <!-- Descripción -->
+                    <td style="padding:0;">
+                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                        <% if (items.length === 0) { %>
+                          <div style="padding:2mm;"><%= pedido?.descripcion_pedido ?? '' %></div>
+                        <% } else { %>
+                          <% items.forEach((it) => { %>
+                            <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
+                              <%= it?.descripcion ?? '' %>
+                            </div>
+                          <% }) %>
+                        <% } %>
+                      </div>
+                    </td>
+
+                    <!-- Fecha -->
+                    <td style="padding:0;">
+                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                        <% if (items.length === 0) { %>
+                          <div style="padding:2mm;"><%= entrega %></div>
+                        <% } else { %>
+                          <% items.forEach(() => { %>
+                            <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
+                              <%= fechaCell %>
+                            </div>
+                          <% }) %>
+                        <% } %>
+                      </div>
+                    </td>
+
+                    <!-- Total -->
+                    <td style="padding:0;">
+                      <div style="height: var(--itemsH); display:flex; flex-direction:column; align-items:stretch;">
+                        <% if (items.length === 0) { %>
+                          <div style="padding:2mm;">&nbsp;</div>
+                        <% } else { %>
+                          <% items.forEach((it) => { %>
+                            <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25; text-align:right;">
+                              <%= (it?.total != null && it?.total !== '') ? Number(it.total).toFixed(2) : '' %>
+                            </div>
+                          <% }) %>
+                        <% } %>
+                      </div>
+                    </td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="right-footer">
+              <div class="factura-box">
+                <div class="factura-title">Requiere factura</div>
+
+                <div class="factura-checks">
+                  <div style="display:flex; gap:2mm; align-items:center;">
+                    <span class="boxcheck"><%= requiereFactura ? '✓' : '' %></span>
+                    <span>SÍ</span>
+                  </div>
+                  <div style="display:flex; gap:2mm; align-items:center;">
+                    <span class="boxcheck"><%= !requiereFactura ? '✓' : '' %></span>
+                    <span>NO</span>
+                  </div>
+                </div>
+
+                <div class="firmas">
+                  <div class="mline">
+                    <div class="k">Recibe</div>
+                    <div class="v"><%= pedido?.recibe ?? '' %></div>
+                  </div>
+                </div>
+
+                <div style="margin-top:4mm; font-size:9.5px; text-transform:uppercase;">
+                  Firme el encargado de realizar trabajo.
+                </div>
+              </div>
+
+              <div class="totales-box">
+                <div class="totrow"><span>Total</span><span><%= money(totalN) %></span></div>
+                <div class="totrow"><span>Anticipo</span><span><%= money(anticipoN) %></span></div>
+                <div class="totrow"><span>Resta</span><span><%= money(restoN) %></span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

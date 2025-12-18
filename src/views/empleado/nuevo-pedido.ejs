@@ -3,133 +3,1168 @@
   headerSubtitle: 'Módulo empleado'
 }) %>
 
+<style>
+  /* =========================
+     ALERTA "BARRA" ARRIBA (bonita)
+     ========================= */
+  .top-banner {
+    position: sticky;
+    top: 10px;
+    z-index: 1055;
+  }
+
+  /* Panel extras */
+  .extra-panel {
+    border: 1px solid #e6e6e6;
+    border-radius: 14px;
+    padding: 14px;
+    background: #f8f9fa;
+    transition: opacity .15s ease;
+  }
+  .extra-panel.is-disabled {
+    opacity: .45;
+  }
+
+  /* Barrita arriba de botones para el switch */
+  .toggle-bar {
+    border: 1px solid #e6e6e6;
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #fff;
+  }
+
+  /* ✅ ANCHO INTERNO DEL FORM (pantalla) */
+  .form-inner{
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+
 <div class="container">
   <div class="row justify-content-center">
-    <!-- 👇 Columna más ancha para tablets/laptops -->
-    <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-7">
+    <div class="col-12 col-sm-11 col-md-9 col-lg-7 col-xl-6">
 
+      <!-- ✅ MODAL ÉXITO (se abre cuando success=1) -->
       <% if (success) { %>
-        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
-          <strong>¡Pedido registrado!</strong> El pedido se guardó correctamente.
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="modal fade" id="successPedidoModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+              <div class="modal-header">
+                <h5 class="modal-title">Pedido registrado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <div class="modal-body">
+                <p class="mb-2">
+                  <strong>¡Pedido registrado con éxito!</strong>
+                </p>
+
+                <% if (folio) { %>
+                  <p class="mb-0">
+                    Folio asignado: <strong><%= folio %></strong>
+                  </p>
+                <% } else { %>
+                  <p class="mb-0 text-muted small">Folio asignado correctamente.</p>
+                <% } %>
+
+                <hr class="my-3">
+
+                <% if (typeof pedidoId !== 'undefined' && pedidoId && String(pedidoId).trim() !== '') { %>
+                <p class="text-muted small mb-2">
+                  PDF oficial listo (con folio real).
+                </p>
+
+                <div class="d-grid gap-2">
+                  <a class="btn btn-outline-primary" target="_blank"
+                    href="/pedidos/pdf/<%= pedidoId %>">
+                    Imprimir/Descargar PDF
+                  </a>
+                </div>
+              <% } else { %>
+                <p class="text-muted small mb-0">
+                  No se detectó el <strong>ID del pedido</strong> para generar el PDF oficial.
+                  Asegúrate de redirigir con <code>&pedidoId=...</code>.
+                </p>
+              <% } %>
+
+
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                  Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSuccessNuevo">
+                  Nuevo pedido
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       <% } %>
 
-      <% if (error) { %>
-        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-          <strong>Ups…</strong> Ocurrió un error al registrar el pedido. Intenta de nuevo.
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      <% } %>
-
-      <div class="card shadow-sm border-0">
+      <div class="card shadow-sm border-0" id="print-area">
         <div class="card-header bg-white border-0 pb-0">
           <h1 class="h4 text-center mb-1">Registrar pedido</h1>
           <p class="text-muted text-center small mb-3">
-            Llena los datos del cliente y del pedido. El estado inicial será 
-            <strong>Pendiente</strong>.
+            Llena los datos del cliente y del pedido. El estado inicial será
+            <strong>No iniciado</strong>.
           </p>
         </div>
 
         <div class="card-body">
           <form method="POST" action="/pedidos" class="needs-validation" novalidate>
 
-            <!-- Nombre -->
-            <div class="mb-3">
-              <label for="nombre_cliente" class="form-label">Nombre del cliente</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre_cliente"
-                name="nombre_cliente"
-                required
-              />
-              <div class="invalid-feedback">
-                Por favor ingresa el nombre del cliente.
+            <div class="form-inner">
+
+              <div class="mb-3">
+                <label for="folio_preview" class="form-label">Folio</label>
+                <input type="text" class="form-control" id="folio_preview" name="folio_preview" readonly />
+                <div class="form-text">El folio se asigna automáticamente al guardar.</div>
               </div>
-            </div>
 
-            <!-- Teléfono -->
-            <div class="mb-3">
-              <label for="telefono_cliente" class="form-label">Teléfono del cliente</label>
-              <input
-                type="tel"
-                class="form-control"
-                id="telefono_cliente"
-                name="telefono_cliente"
-                required
-              />
-              <div class="invalid-feedback">
-                Por favor ingresa un teléfono de contacto.
+              <div class="row g-3">
+                <div class="col-12">
+
+                  <div class="mb-3">
+                    <label for="nombre_cliente" class="form-label">Nombre del cliente</label>
+                    <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente" required />
+                    <div class="invalid-feedback">Por favor ingresa el nombre del cliente.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="telefono_cliente" class="form-label">Teléfono del cliente</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="telefono_cliente"
+                      name="telefono_cliente"
+                      required
+                      inputmode="numeric"
+                      autocomplete="tel"
+                      maxlength="10"
+                      pattern="[0-9]{10}"
+                    />
+                    <div class="invalid-feedback">Ingresa un teléfono de 10 dígitos.</div>
+                  </div>
+
+                  <!-- =======================================
+                       ✅ PARTIDAS (reemplaza textarea)
+                       - descripcion_pedido sigue existiendo (hidden)
+                       - items_json es el payload real
+                       ======================================= -->
+                  <div class="mb-3">
+                    <label class="form-label">Partidas del pedido</label>
+
+                    <!-- ✅ compatibilidad con backend actual (required en controller/service) -->
+                    <input type="hidden" id="descripcion_pedido" name="descripcion_pedido" value="" />
+
+                    <!-- ✅ payload real -->
+                    <input type="hidden" id="items_json" name="items_json" value="[]" />
+
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle mb-2" id="itemsTable">
+                        <thead class="table-light">
+                          <tr>
+                            <th style="width: 90px;">Cant.</th>
+                            <th>Descripción</th>
+                            <th style="width: 140px;">Total</th>
+                            <th style="width: 60px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="itemsTbody">
+                          <!-- filas por JS -->
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAddItem">
+                        + Agregar fila
+                      </button>
+                      <small class="text-muted align-self-center">
+                        El total del pedido se calcula automáticamente con la suma de las partidas.
+                      </small>
+                    </div>
+
+                    <div class="invalid-feedback d-block" id="itemsFeedback" style="display:none;">
+                      Agrega al menos una partida válida.
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select class="form-select" id="sucursal" name="sucursal" required>
+                      <option value="" selected disabled>Selecciona una sucursal</option>
+                      <option value="Plazuela">Plazuela</option>
+                      <option value="Centro">Centro</option>
+                      <option value="López">López</option>
+                    </select>
+                    <div class="invalid-feedback">Selecciona la sucursal correspondiente.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="fecha_entrega" class="form-label">Fecha de entrega</label>
+                    <input type="date" class="form-control" id="fecha_entrega" name="fecha_entrega" required />
+                    <div class="invalid-feedback">Selecciona una fecha de entrega.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">¿Requiere factura?</label>
+                    <div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="requiere_factura" value="si">
+                        <label class="form-check-label">Sí</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="requiere_factura" value="no" checked>
+                        <label class="form-check-label">No</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="total" class="form-label">Total ($)</label>
+                    <!-- ✅ ahora lo calcula la tabla -->
+                    <input type="number" class="form-control" id="total" name="total" step="0.01" min="0" inputmode="decimal" required readonly>
+                    <div class="invalid-feedback">Ingresa el total.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="anticipo" class="form-label">Anticipo ($)</label>
+                    <input type="number" class="form-control" id="anticipo" name="anticipo" step="0.01" min="0" inputmode="decimal" required>
+                    <div class="invalid-feedback" id="anticipoFeedback">Ingresa el anticipo.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="resto_preview" class="form-label">Resto ($)</label>
+                    <input type="number" class="form-control" id="resto_preview" name="resto_preview" readonly required>
+                    <div class="invalid-feedback">El resto no puede quedar vacío.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="encargado" class="form-label">Encargado de realizar el trabajo</label>
+                    <input type="text" class="form-control" id="encargado" name="encargado" placeholder="Nombre de quien hará el trabajo" required />
+                    <div class="invalid-feedback">Ingresa el encargado.</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="recibe" class="form-label">Nombre de quien recibe </label>
+                    <input type="text" class="form-control" id="recibe" name="recibe"
+                      placeholder="Nombre de la persona que recogerá el pedido" required />
+                    <div class="invalid-feedback">Ingresa el nombre de quien recibe.</div>
+
+                  </div>
+
+                </div>
+
+                <div class="toggle-bar mt-3">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="small text-muted">
+                      Datos de impresión / archivo <span class="text-muted">(solo si aplica)</span>
+                    </div>
+
+                    <div class="form-check form-switch m-0">
+                      <input class="form-check-input" type="checkbox" id="toggleExtra" name="toggleExtra" value="1">
+                      <label class="form-check-label" for="toggleExtra">
+                        Activar
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
               </div>
-            </div>
 
-            <!-- Descripción -->
-            <div class="mb-3">
-              <label for="descripcion_pedido" class="form-label">Descripción del pedido</label>
-              <textarea
-                class="form-control"
-                id="descripcion_pedido"
-                name="descripcion_pedido"
-                rows="3"
-                required
-              ></textarea>
-              <div class="invalid-feedback">
-                Describe brevemente el pedido.
+              <div class="extra-panel is-disabled mt-3" id="extraPanel">
+                <h6 class="mb-2">Trabajo</h6>
+
+                <div class="mb-3 d-flex gap-4 flex-wrap">
+                  <label class="form-check">
+                    <input class="form-check-input" type="checkbox" id="trabajo_impreso" name="trabajo_impreso" value="true" disabled>
+                    <span class="form-check-label">Trabajo impreso</span>
+                  </label>
+
+                  <label class="form-check">
+                    <input class="form-check-input" type="checkbox" id="trabajo_entregado" name="trabajo_entregado" value="true" disabled>
+                    <span class="form-check-label">Trabajo entregado</span>
+                  </label>
+                </div>
+
+                <div class="mb-3">
+                  <label for="observaciones" class="form-label">Observaciones</label>
+                  <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Notas adicionales del trabajo..." disabled></textarea>
+                </div>
+
+                <h6 class="mb-2">¿Dónde se guardó el archivo?</h6>
+
+                <div class="mb-2">
+                  <label for="archivo_carpeta" class="form-label">Carpeta</label>
+                  <input class="form-control" id="archivo_carpeta" name="archivo_carpeta" placeholder="Ej: Quality/Dic-2025" disabled>
+                </div>
+
+                <div class="mb-2">
+                  <label for="archivo_nombre" class="form-label">Nombre del archivo</label>
+                  <input class="form-control" id="archivo_nombre" name="archivo_nombre" placeholder="Ej: Pedido_045.pdf" disabled>
+                </div>
+
+                <div class="mb-0">
+                  <label for="archivo_computadora" class="form-label">Computadora</label>
+                  <input class="form-control" id="archivo_computadora" name="archivo_computadora" placeholder="Ej: PC-Centro-02" disabled>
+                </div>
               </div>
-            </div>
 
-            <!-- Sucursal -->
-            <div class="mb-3">
-              <label for="sucursal" class="form-label">Sucursal</label>
-              <select
-                class="form-select"
-                id="sucursal"
-                name="sucursal"
-                required
-              >
-                <option value="" selected disabled>Selecciona una sucursal</option>
-                <option value="Plazuela">Plazuela</option>
-                <option value="Centro">Centro</option>
-                <option value="López">López</option>
-              </select>
-              <div class="invalid-feedback">
-                Selecciona la sucursal correspondiente.
+              <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">Registrar pedido</button>
               </div>
+
+              <p class="text-muted small text-center mt-3 mb-0">
+                La fecha del pedido y el estado inicial (<strong>No iniciado</strong>) se generan automáticamente.
+              </p>
+
             </div>
-
-            <!-- Fecha -->
-            <div class="mb-3">
-              <label for="fecha_entrega" class="form-label">Fecha de entrega</label>
-              <input
-                type="date"
-                class="form-control"
-                id="fecha_entrega"
-                name="fecha_entrega"
-                required
-              />
-              <div class="invalid-feedback">
-                Selecciona una fecha de entrega.
-              </div>
-            </div>
-
-            <!-- Botón -->
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary">
-                Registrar pedido
-              </button>
-            </div>
-
-            <p class="text-muted small text-center mt-3 mb-0">
-              La fecha del pedido y el estado inicial (<strong>Pendiente</strong>) se generan automáticamente.
-            </p>
-
           </form>
+
+          <!-- ✅ MODAL CONFIRMACIÓN -->
+          <div class="modal fade" id="confirmPedidoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirmar pedido</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                  <p class="text-muted small mb-3">
+                    Revisa la información antes de guardar. Puedes cerrar con la <strong>X</strong> para editar o generar el PDF.
+                  </p>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <tbody>
+                        <tr>
+                          <th class="text-nowrap" style="width: 190px;">Folio (previo)</th>
+                          <td><strong id="conf_folio">—</strong></td>
+                        </tr>
+                        <tr><th>Cliente</th><td id="conf_cliente">—</td></tr>
+                        <tr><th>Teléfono</th><td id="conf_tel">—</td></tr>
+                        <tr><th>Sucursal</th><td id="conf_sucursal">—</td></tr>
+                        <tr><th>Entrega</th><td id="conf_entrega">—</td></tr>
+                        <tr><th>Factura</th><td id="conf_factura">—</td></tr>
+                        <tr><th>Total / Anticipo / Resto</th><td id="conf_montos">—</td></tr>
+                        <tr><th>Encargado</th><td id="conf_encargado">—</td></tr>
+                        <tr><th>Recibe</th><td id="conf_recibe">—</td></tr>
+
+                        <!-- ✅ ahora muestra partidas -->
+                        <tr><th>Partidas</th><td id="conf_desc" style="white-space:pre-wrap;">—</td></tr>
+
+                        <tr class="table-light" id="extrasHeaderRow">
+                          <th colspan="2" class="small text-muted">Extras (solo si aplica)</th>
+                        </tr>
+                        <tr class="extras-row"><th>Trabajo impreso</th><td id="conf_impreso">—</td></tr>
+                        <tr class="extras-row"><th>Trabajo entregado</th><td id="conf_entregado">—</td></tr>
+                        <tr class="extras-row"><th>Observaciones</th><td id="conf_obs">—</td></tr>
+                        <tr class="extras-row"><th>Carpeta</th><td id="conf_carpeta">—</td></tr>
+                        <tr class="extras-row"><th>Archivo</th><td id="conf_archivo">—</td></tr>
+                        <tr class="extras-row"><th>Computadora</th><td id="conf_pc">—</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  
+
+                  <button type="button" class="btn btn-primary" id="btnModalGuardar">
+                    Aceptar y guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ FORM OCULTO: genera el PDF preview real en nueva pestaña -->
+          <form id="pdfPreviewForm" method="POST" action="/pedidos/pdf/preview" target="_blank" style="display:none;"></form>
+
         </div>
       </div>
 
     </div>
   </div>
 </div>
+
+<script>
+  function submitPdfPreview() {
+    const sourceForm = document.querySelector('form.needs-validation');
+    const pdfForm = document.getElementById('pdfPreviewForm');
+    if (!sourceForm || !pdfForm) return;
+
+    pdfForm.innerHTML = '';
+    const fd = new FormData(sourceForm);
+
+    function setHidden(name, value) {
+      let input = pdfForm.querySelector(`input[name="${name}"]`);
+      if (!input) {
+        input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        pdfForm.appendChild(input);
+      }
+      input.value = value ?? '';
+    }
+
+    for (const [k, v] of fd.entries()) setHidden(k, v);
+
+    setHidden('trabajo_impreso', document.getElementById('trabajo_impreso')?.checked ? 'true' : '');
+    setHidden('trabajo_entregado', document.getElementById('trabajo_entregado')?.checked ? 'true' : '');
+    setHidden('observaciones', document.getElementById('observaciones')?.value || '');
+    setHidden('archivo_carpeta', document.getElementById('archivo_carpeta')?.value || '');
+    setHidden('archivo_nombre', document.getElementById('archivo_nombre')?.value || '');
+    setHidden('archivo_computadora', document.getElementById('archivo_computadora')?.value || '');
+
+    setHidden('folio_preview', document.getElementById('folio_preview')?.value || '');
+    setHidden('resto_preview', document.getElementById('resto_preview')?.value || '');
+
+    setHidden('items_json', document.getElementById('items_json')?.value || '[]');
+    setHidden('descripcion_pedido', document.getElementById('descripcion_pedido')?.value || '');
+
+    pdfForm.submit();
+  }
+</script>
+
+<!-- ====== TODO tu JS igual como lo mandaste (no lo toqué) ====== -->
+<!-- (Pegué todo lo demás tal cual para no meter errores) -->
+
+<script>
+  // ✅ VALIDACIÓN RELACIÓN: anticipo <= total (SIN TOASTS)
+  function validarRelacionTotales() {
+    const totalEl = document.getElementById('total');
+    const anticipoEl = document.getElementById('anticipo');
+    const restoEl = document.getElementById('resto_preview');
+    const feedback = document.getElementById('anticipoFeedback');
+
+    if (!totalEl || !anticipoEl || !restoEl) return true;
+
+    totalEl.setCustomValidity('');
+    anticipoEl.setCustomValidity('');
+    restoEl.setCustomValidity('');
+    if (feedback) feedback.textContent = 'Ingresa el anticipo.';
+
+    const tRaw = totalEl.value;
+    const aRaw = anticipoEl.value;
+
+    if (tRaw === '' || aRaw === '') return true;
+
+    const total = Number(tRaw);
+    const anticipo = Number(aRaw);
+
+    if (Number.isNaN(total) || Number.isNaN(anticipo)) return true;
+
+    if (total < 0 || anticipo < 0) {
+      anticipoEl.setCustomValidity('Monto inválido');
+      if (feedback) feedback.textContent = 'El monto debe ser positivo.';
+      return false;
+    }
+
+    if (anticipo > total) {
+      const msg = 'El anticipo no puede ser mayor al total.';
+      anticipoEl.setCustomValidity(msg);
+      restoEl.setCustomValidity('Resto inválido');
+      if (feedback) feedback.textContent = msg;
+      return false;
+    }
+
+    return true;
+  }
+</script>
+
+<script>
+  // ================================
+  // ✅ ITEMS (tabla partidas)
+  // ================================
+  function money2(n) {
+    const num = Number(n);
+    if (!Number.isFinite(num)) return 0;
+    return Math.round(num * 100) / 100;
+  }
+
+  function buildEmptyRow(item = {}) {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>
+        <input type="number" class="form-control form-control-sm item-cant" min="1" step="1" value="${item.cantidad ?? ''}" placeholder="1" required>
+      </td>
+      <td>
+        <input type="text" class="form-control form-control-sm item-desc" value="${item.descripcion ?? ''}" placeholder="Ej: 3 camisas" required>
+      </td>
+      <td>
+        <input type="number" class="form-control form-control-sm item-total" min="0" step="0.01" value="${item.total ?? ''}" placeholder="0.00" required>
+      </td>
+      <td class="text-end">
+        <button type="button" class="btn btn-outline-danger btn-sm item-del" title="Eliminar">✕</button>
+      </td>
+    `;
+
+    tr.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        syncItemsToHidden();
+        recalcTotalFromItems();
+        try { setDraft(readFormValues()); } catch {}
+      });
+      inp.addEventListener('change', () => {
+        syncItemsToHidden();
+        recalcTotalFromItems();
+        try { setDraft(readFormValues()); } catch {}
+      });
+    });
+
+    tr.querySelector('.item-del').addEventListener('click', () => {
+      tr.remove();
+      ensureAtLeastOneRow();
+      syncItemsToHidden();
+      recalcTotalFromItems();
+      try { setDraft(readFormValues()); } catch {}
+    });
+
+    return tr;
+  }
+
+  function getItemsFromTable() {
+    const rows = Array.from(document.querySelectorAll('#itemsTbody tr'));
+    const items = [];
+
+    rows.forEach(r => {
+      const cant = Number(r.querySelector('.item-cant')?.value ?? '');
+      const desc = (r.querySelector('.item-desc')?.value ?? '').trim();
+      const tot = Number(r.querySelector('.item-total')?.value ?? '');
+
+      if (!desc && (!Number.isFinite(cant) || !Number.isFinite(tot))) return;
+
+      items.push({
+        cantidad: Number.isFinite(cant) ? cant : null,
+        descripcion: desc || null,
+        total: Number.isFinite(tot) ? money2(tot) : null
+      });
+    });
+
+    return items;
+  }
+
+  function makeDescripcionFromItems(items) {
+    const lines = (items || [])
+      .filter(i => i && i.cantidad && i.descripcion && Number.isFinite(Number(i.total)))
+      .map((i, idx) => `${idx + 1}) (${i.cantidad}) ${i.descripcion} — $${money2(i.total).toFixed(2)}`);
+    return lines.join('\n');
+  }
+
+  function syncItemsToHidden() {
+    const items = getItemsFromTable();
+    const itemsJsonEl = document.getElementById('items_json');
+    const descHiddenEl = document.getElementById('descripcion_pedido');
+
+    if (itemsJsonEl) itemsJsonEl.value = JSON.stringify(items);
+    if (descHiddenEl) descHiddenEl.value = makeDescripcionFromItems(items);
+  }
+
+  function recalcTotalFromItems() {
+    const items = getItemsFromTable();
+    const sum = items.reduce((acc, i) => {
+      const t = Number(i?.total);
+      return acc + (Number.isFinite(t) ? t : 0);
+    }, 0);
+
+    const totalEl = document.getElementById('total');
+    if (totalEl) totalEl.value = money2(sum).toFixed(2);
+
+    try { if (typeof calcularResto === 'function') calcularResto(); } catch {}
+    try { if (typeof validarRelacionTotales === 'function') validarRelacionTotales(); } catch {}
+  }
+
+  function ensureAtLeastOneRow() {
+    const tbody = document.getElementById('itemsTbody');
+    if (!tbody) return;
+    if (tbody.querySelectorAll('tr').length === 0) {
+      tbody.appendChild(buildEmptyRow());
+    }
+  }
+
+  function validateItemsHard() {
+    const items = getItemsFromTable()
+      .filter(i => i && i.cantidad && i.descripcion && Number.isFinite(Number(i.total)));
+    const ok = items.length > 0;
+
+    const fb = document.getElementById('itemsFeedback');
+    if (fb) fb.style.display = ok ? 'none' : 'block';
+
+    return ok;
+  }
+
+  function setItemsToTable(items = []) {
+    const tbody = document.getElementById('itemsTbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    (items || []).forEach(it => tbody.appendChild(buildEmptyRow(it)));
+    ensureAtLeastOneRow();
+    syncItemsToHidden();
+    recalcTotalFromItems();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.getElementById('itemsTbody');
+    const btnAdd = document.getElementById('btnAddItem');
+
+    if (!tbody || !btnAdd) return;
+
+    ensureAtLeastOneRow();
+    syncItemsToHidden();
+    recalcTotalFromItems();
+
+    btnAdd.addEventListener('click', () => {
+      tbody.appendChild(buildEmptyRow());
+      syncItemsToHidden();
+      recalcTotalFromItems();
+      try { setDraft(readFormValues()); } catch {}
+    });
+
+    const form = document.querySelector('form.needs-validation');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        const okItems = validateItemsHard();
+        if (!okItems) {
+          e.preventDefault();
+          e.stopPropagation();
+          form.classList.add('was-validated');
+          document.getElementById('itemsTable')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, true);
+    }
+  });
+</script>
+
+<!-- ✅ el resto de tus scripts (confirm modal, draft, toggle, resto, folio live, success modal) -->
+<!-- ✅ Pégalo igual como lo tenías, sin cambios -->
+
+<script>
+  // =========================================
+  // ✅ 1) VALIDACIÓN + MODAL CONFIRM
+  // =========================================
+  window.addEventListener('load', () => {
+    'use strict';
+
+    const form = document.querySelector('form.needs-validation');
+    if (!form) return;
+
+    const modalEl = document.getElementById('confirmPedidoModal');
+
+    if (!modalEl || !window.bootstrap || !bootstrap.Modal) {
+      console.warn('⚠️ Bootstrap Modal no está disponible. Revisa tu footer (bootstrap.bundle).');
+      return;
+    }
+
+    const modal = new bootstrap.Modal(modalEl, { backdrop: 'static' });
+    let bypassConfirm = false;
+
+    function fmtMoney(v) {
+      const n = parseFloat(v);
+      if (Number.isNaN(n)) return '—';
+      return '$' + n.toFixed(2);
+    }
+
+    function fmtDateISO(iso) {
+      if (!iso) return '—';
+      const parts = String(iso).split('-');
+      if (parts.length !== 3) return iso;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function setText(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = (val && String(val).trim() !== '') ? val : '—';
+    }
+
+    function isMeaningfulText(v) {
+      if (v == null) return false;
+      const s = String(v).trim();
+      return s !== '' && s !== '—';
+    }
+
+    function fillConfirmModal() {
+      const folio = document.getElementById('folio_preview')?.value || '';
+      const nombre = document.getElementById('nombre_cliente')?.value || '';
+      const tel = document.getElementById('telefono_cliente')?.value || '';
+      const suc = document.getElementById('sucursal')?.value || '';
+      const fecha = document.getElementById('fecha_entrega')?.value || '';
+
+      const total = document.getElementById('total')?.value || '';
+      const anticipo = document.getElementById('anticipo')?.value || '';
+      const resto = document.getElementById('resto_preview')?.value || '';
+      const encargado = document.getElementById('encargado')?.value || '';
+      const recibe = document.getElementById('recibe')?.value || '';
+
+      const factura = document.querySelector('input[name="requiere_factura"]:checked')?.value || 'no';
+
+      const toggleExtra = document.getElementById('toggleExtra')?.checked || false;
+      const impreso = document.getElementById('trabajo_impreso')?.checked || false;
+      const entregado = document.getElementById('trabajo_entregado')?.checked || false;
+      const obs = document.getElementById('observaciones')?.value || '';
+      const carpeta = document.getElementById('archivo_carpeta')?.value || '';
+      const archivo = document.getElementById('archivo_nombre')?.value || '';
+      const pc = document.getElementById('archivo_computadora')?.value || '';
+
+      setText('conf_folio', folio);
+      setText('conf_cliente', nombre);
+      setText('conf_tel', tel);
+      setText('conf_sucursal', suc);
+      setText('conf_entrega', fmtDateISO(fecha));
+      setText('conf_factura', (factura === 'si') ? 'Sí' : 'No');
+      setText('conf_montos', `${fmtMoney(total)} / ${fmtMoney(anticipo)} / ${fmtMoney(resto)}`);
+      setText('conf_encargado', encargado);
+      setText('conf_recibe', recibe);
+
+      const itemsJson = document.getElementById('items_json')?.value || '[]';
+      let items = [];
+      try { items = JSON.parse(itemsJson); } catch {}
+
+      const pretty = (items || [])
+        .filter(i => i && i.cantidad && i.descripcion && Number.isFinite(Number(i.total)))
+        .map((i, idx) => `${idx + 1}) (${i.cantidad}) ${i.descripcion} — $${Number(i.total).toFixed(2)}`)
+        .join('\n');
+
+      setText('conf_desc', pretty || '—');
+
+      if (!toggleExtra) {
+        setText('conf_impreso', '—');
+        setText('conf_entregado', '—');
+        setText('conf_obs', '—');
+        setText('conf_carpeta', '—');
+        setText('conf_archivo', '—');
+        setText('conf_pc', '—');
+      } else {
+        setText('conf_impreso', impreso ? 'Sí' : 'No');
+        setText('conf_entregado', entregado ? 'Sí' : 'No');
+        setText('conf_obs', obs);
+        setText('conf_carpeta', carpeta);
+        setText('conf_archivo', archivo);
+        setText('conf_pc', pc);
+      }
+
+      const hasExtrasData =
+        (impreso === true) ||
+        (entregado === true) ||
+        isMeaningfulText(obs) ||
+        isMeaningfulText(carpeta) ||
+        isMeaningfulText(archivo) ||
+        isMeaningfulText(pc);
+
+      const shouldShowExtras = toggleExtra && hasExtrasData;
+
+      const headerRow = document.getElementById('extrasHeaderRow');
+      const extrasRows = modalEl.querySelectorAll('.extras-row');
+
+      if (!shouldShowExtras) {
+        if (headerRow) headerRow.style.display = 'none';
+        extrasRows.forEach(r => r.style.display = 'none');
+      } else {
+        if (headerRow) headerRow.style.display = '';
+        extrasRows.forEach(r => r.style.display = '');
+      }
+    }
+
+    document.getElementById('btnModalImprimir')?.addEventListener('click', () => {
+      submitPdfPreview();
+    });
+
+    document.getElementById('btnModalGuardar')?.addEventListener('click', () => {
+      bypassConfirm = true;
+      try { modal.hide(); } catch {}
+      if (typeof form.requestSubmit === 'function') form.requestSubmit();
+      else form.submit();
+    });
+
+    form.addEventListener('submit', (event) => {
+      try { if (typeof calcularResto === 'function') calcularResto(); } catch {}
+
+      const okRel = validarRelacionTotales();
+
+      if (bypassConfirm) return;
+
+      const okItems = (typeof validateItemsHard === 'function') ? validateItemsHard() : true;
+
+      if (!okRel || !okItems || !form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus({ preventScroll: true });
+        }
+        form.classList.add('was-validated');
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      form.classList.add('was-validated');
+      fillConfirmModal();
+      modal.show();
+    }, false);
+  });
+</script>
+
+<script>
+  const DRAFT_KEY = 'quality_nuevo_pedido_draft_v1';
+
+  function getDraft() {
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}'); }
+    catch { return {}; }
+  }
+
+  function setDraft(obj) {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(obj || {})); } catch {}
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  }
+
+  function readFormValues() {
+    const data = {};
+
+    const nombre = document.getElementById('nombre_cliente');
+    const tel = document.getElementById('telefono_cliente');
+    const itemsJson = document.getElementById('items_json');
+    const suc = document.getElementById('sucursal');
+    const fecha = document.getElementById('fecha_entrega');
+    const total = document.getElementById('total');
+    const anticipo = document.getElementById('anticipo');
+    const encargado = document.getElementById('encargado');
+    const recibe = document.getElementById('recibe');
+
+    const toggleExtra = document.getElementById('toggleExtra');
+
+    const obs = document.getElementById('observaciones');
+    const imp = document.getElementById('trabajo_impreso');
+    const ent = document.getElementById('trabajo_entregado');
+    const car = document.getElementById('archivo_carpeta');
+    const nom = document.getElementById('archivo_nombre');
+    const pc  = document.getElementById('archivo_computadora');
+
+    const facturaSi = document.querySelector('input[name="requiere_factura"][value="si"]');
+    const facturaNo = document.querySelector('input[name="requiere_factura"][value="no"]');
+
+    if (nombre) data.nombre_cliente = nombre.value;
+    if (tel) data.telefono_cliente = tel.value;
+
+    if (itemsJson) data.items_json = itemsJson.value;
+
+    if (suc) data.sucursal = suc.value;
+    if (fecha) data.fecha_entrega = fecha.value;
+    if (total) data.total = total.value;
+    if (anticipo) data.anticipo = anticipo.value;
+    if (encargado) data.encargado = encargado.value;
+    if (recibe) data.recibe = recibe.value;
+
+    if (facturaSi && facturaNo) data.requiere_factura = facturaSi.checked ? 'si' : 'no';
+    if (toggleExtra) data.toggleExtra = toggleExtra.checked;
+
+    if (obs) data.observaciones = obs.value;
+    if (imp) data.trabajo_impreso = !!imp.checked;
+    if (ent) data.trabajo_entregado = !!ent.checked;
+    if (car) data.archivo_carpeta = car.value;
+    if (nom) data.archivo_nombre = nom.value;
+    if (pc)  data.archivo_computadora = pc.value;
+
+    return data;
+  }
+
+  function applyDraft(d) {
+    if (!d) return;
+
+    const nombre = document.getElementById('nombre_cliente');
+    const tel = document.getElementById('telefono_cliente');
+    const itemsJson = document.getElementById('items_json');
+    const suc = document.getElementById('sucursal');
+    const fecha = document.getElementById('fecha_entrega');
+    const total = document.getElementById('total');
+    const anticipo = document.getElementById('anticipo');
+    const encargado = document.getElementById('encargado');
+    const recibe = document.getElementById('recibe');
+
+    const toggleExtra = document.getElementById('toggleExtra');
+
+    const obs = document.getElementById('observaciones');
+    const imp = document.getElementById('trabajo_impreso');
+    const ent = document.getElementById('trabajo_entregado');
+    const car = document.getElementById('archivo_carpeta');
+    const nom = document.getElementById('archivo_nombre');
+    const pc  = document.getElementById('archivo_computadora');
+
+    const facturaSi = document.querySelector('input[name="requiere_factura"][value="si"]');
+    const facturaNo = document.querySelector('input[name="requiere_factura"][value="no"]');
+
+    if (nombre && !nombre.value && d.nombre_cliente) nombre.value = d.nombre_cliente;
+    if (tel && !tel.value && d.telefono_cliente) tel.value = d.telefono_cliente;
+
+    if (itemsJson && d.items_json) {
+      itemsJson.value = d.items_json;
+      try {
+        const arr = JSON.parse(d.items_json || '[]');
+        if (typeof setItemsToTable === 'function') setItemsToTable(arr);
+      } catch {}
+    }
+
+    if (suc && (!suc.value || suc.value === '') && d.sucursal) suc.value = d.sucursal;
+    if (fecha && !fecha.value && d.fecha_entrega) fecha.value = d.fecha_entrega;
+    if (total && !total.value && (d.total ?? '') !== '') total.value = d.total;
+    if (anticipo && !anticipo.value && (d.anticipo ?? '') !== '') anticipo.value = d.anticipo;
+    if (encargado && !encargado.value && d.encargado) encargado.value = d.encargado;
+    if (recibe && !recibe.value && d.recibe) recibe.value = d.recibe;
+
+    if (facturaSi && facturaNo && d.requiere_factura) {
+      if (d.requiere_factura === 'si') facturaSi.checked = true;
+      if (d.requiere_factura === 'no') facturaNo.checked = true;
+    }
+
+    if (toggleExtra && typeof d.toggleExtra === 'boolean') toggleExtra.checked = d.toggleExtra;
+
+    if (obs && !obs.value && d.observaciones) obs.value = d.observaciones;
+    if (imp && d.trabajo_impreso === true) imp.checked = true;
+    if (ent && d.trabajo_entregado === true) ent.checked = true;
+    if (car && !car.value && d.archivo_carpeta) car.value = d.archivo_carpeta;
+    if (nom && !nom.value && d.archivo_nombre) nom.value = d.archivo_nombre;
+    if (pc  && !pc.value && d.archivo_computadora) pc.value = d.archivo_computadora;
+
+    try { if (typeof calcularResto === 'function') calcularResto(); } catch {}
+    try { validarRelacionTotales(); } catch {}
+  }
+
+  function hookAutosave() {
+    const inputs = document.querySelectorAll('#print-area input, #print-area textarea, #print-area select');
+    inputs.forEach(el => {
+      el.addEventListener('input', () => setDraft(readFormValues()));
+      el.addEventListener('change', () => setDraft(readFormValues()));
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    applyDraft(getDraft());
+    hookAutosave();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+     const hasSuccess = "<%= success ? 'true' : 'false' %>" === 'true';
+    if (!hasSuccess) return;
+
+    clearDraft();
+
+    const form = document.querySelector('form.needs-validation');
+    if (form) {
+      form.reset();
+      form.classList.remove('was-validated');
+    }
+
+    const toggle = document.getElementById('toggleExtra');
+    if (toggle) toggle.checked = false;
+
+    const panel = document.getElementById('extraPanel');
+    if (panel) {
+      panel.classList.add('is-disabled');
+      panel.querySelectorAll('input, textarea, select').forEach(el => {
+        el.disabled = true;
+        if (el.type === 'checkbox') el.checked = false;
+        else el.value = '';
+      });
+    }
+
+    try {
+      const tbody = document.getElementById('itemsTbody');
+      if (tbody) tbody.innerHTML = '';
+      if (typeof ensureAtLeastOneRow === 'function') ensureAtLeastOneRow();
+      if (typeof syncItemsToHidden === 'function') syncItemsToHidden();
+      if (typeof recalcTotalFromItems === 'function') recalcTotalFromItems();
+    } catch {}
+
+    const resto = document.getElementById('resto_preview');
+    if (resto) resto.value = '';
+
+    try { if (typeof cargarFolioGlobal === 'function') cargarFolioGlobal(); } catch {}
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('toggleExtra');
+    const panel = document.getElementById('extraPanel');
+    if (!toggle || !panel) return;
+
+    const extraInputs = panel.querySelectorAll('input, textarea, select');
+
+    function setEnabled(enabled) {
+      panel.classList.toggle('is-disabled', !enabled);
+      extraInputs.forEach(el => { el.disabled = !enabled; });
+
+      if (!enabled) {
+        extraInputs.forEach(el => {
+          if (el.type === 'checkbox') el.checked = false;
+          else el.value = '';
+        });
+      }
+
+      try { setDraft(readFormValues()); } catch {}
+    }
+
+    toggle.addEventListener('change', () => setEnabled(toggle.checked));
+
+    const d = (() => { try { return getDraft(); } catch { return {}; } })();
+    if (typeof d.toggleExtra === 'boolean') toggle.checked = d.toggleExtra;
+
+    setEnabled(!!toggle.checked);
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tel = document.getElementById('telefono_cliente');
+    const total = document.getElementById('total');
+    const anticipo = document.getElementById('anticipo');
+
+    if (tel) {
+      tel.addEventListener('input', () => {
+        tel.value = String(tel.value || '').replace(/\D/g, '').slice(0, 10);
+      });
+    }
+
+    function bloquearTeclasNoDeseadas(el) {
+      if (!el) return;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+          e.preventDefault();
+        }
+      });
+    }
+
+    bloquearTeclasNoDeseadas(total);
+    bloquearTeclasNoDeseadas(anticipo);
+
+    function asegurarPositivo(el) {
+      if (!el) return;
+      el.addEventListener('input', () => {
+        if (el.value === '') return;
+        const n = Number(el.value);
+        if (Number.isNaN(n) || n < 0) el.value = '0';
+      });
+    }
+
+    asegurarPositivo(total);
+    asegurarPositivo(anticipo);
+
+    const revalidar = () => {
+      try { if (typeof calcularResto === 'function') calcularResto(); } catch {}
+      try { validarRelacionTotales(); } catch {}
+    };
+    total?.addEventListener('input', revalidar);
+    anticipo?.addEventListener('input', revalidar);
+  });
+</script>
+
+<script>
+  const totalInput = document.getElementById('total');
+  const anticipoInput = document.getElementById('anticipo');
+  const restoInput = document.getElementById('resto_preview');
+
+  function calcularResto() {
+    const tRaw = totalInput.value;
+    const aRaw = anticipoInput.value;
+
+    if (tRaw === '' || aRaw === '') {
+      restoInput.value = '';
+      return;
+    }
+
+    const total = parseFloat(tRaw);
+    const anticipo = parseFloat(aRaw);
+
+    if (Number.isNaN(total) || Number.isNaN(anticipo) || total < 0 || anticipo < 0 || anticipo > total) {
+      restoInput.value = '';
+      return;
+    }
+
+    const resto = total - anticipo;
+    restoInput.value = resto.toFixed(2);
+  }
+
+  totalInput.addEventListener('input', calcularResto);
+  anticipoInput.addEventListener('input', calcularResto);
+</script>
+
+<script>
+  const folioInput = document.getElementById('folio_preview');
+  const formEl = document.querySelector('form[action="/pedidos"]') || document.querySelector('form');
+
+  let folioIntervalId = null;
+  let isFetchingFolio = false;
+
+  async function cargarFolioGlobal() {
+    if (isFetchingFolio) return;
+    isFetchingFolio = true;
+
+    try {
+      const res = await fetch('/pedidos/next-folio', { cache: 'no-store' });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const next = String(data.nextFolio ?? '').trim();
+      if (!next) return;
+
+      if (folioInput.value !== next) folioInput.value = next;
+    } catch (e) {
+    } finally {
+      isFetchingFolio = false;
+    }
+  }
+
+  function iniciarFolioLive() {
+    cargarFolioGlobal();
+    folioIntervalId = setInterval(cargarFolioGlobal, 2000);
+  }
+
+  function detenerFolioLive() {
+    if (folioIntervalId) clearInterval(folioIntervalId);
+    folioIntervalId = null;
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) detenerFolioLive();
+    else iniciarFolioLive();
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    iniciarFolioLive();
+  });
+
+  if (formEl) {
+    formEl.addEventListener('submit', async () => {
+      await cargarFolioGlobal();
+    });
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const successModalEl = document.getElementById('successPedidoModal');
+    if (successModalEl && window.bootstrap?.Modal) {
+      const m = new bootstrap.Modal(successModalEl);
+      m.show();
+    }
+
+    document.getElementById('btnSuccessNuevo')?.addEventListener('click', () => {
+      window.location.href = '/empleado/pedidos/nuevo';
+    });
+  });
+</script>
 
 <%- include('../partials/footer') %>

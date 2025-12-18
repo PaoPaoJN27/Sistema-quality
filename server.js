@@ -29,10 +29,13 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 2, // 2 horas
+      maxAge: 1000 * 60 * 60 * 2,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     },
   })
 );
+
 
 // ====== Desactivar caché del navegador ======
 app.use((req, res, next) => {
@@ -95,17 +98,21 @@ app.get('/', (req, res) => {
 });
 
 // Vista del formulario del empleado (protegida)
+
 app.get(
   '/empleado/pedidos/nuevo',
   requireAuth,
   requireRole('empleado'),
   (req, res) => {
-    const { success, error } = req.query;
+    const { success, error, folio, msg, pedidoId } = req.query;
 
     res.render('empleado/nuevo-pedido', {
       title: 'Nuevo pedido - Empleado',
       success: success === '1',
-      error: error === '1',
+      error: error || '',
+      msg: msg || '',
+      folio: folio || '',
+      pedidoId: pedidoId || '' // ✅ para el botón del PDF oficial
     });
   }
 );

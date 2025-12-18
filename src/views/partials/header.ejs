@@ -16,9 +16,17 @@
 </head>
 
 <body class="d-flex flex-column min-vh-100 bg-light">
-  <header class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="/empleado/pedidos/nuevo">
+
+  <!-- ================= HEADER ================= -->
+  <header class="navbar navbar-dark bg-primary shadow-sm">
+    <!-- 🔑 MISMO CONTENEDOR que el body -->
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
+
+      <!-- Logo + enlace dinámico -->
+      <a
+        class="navbar-brand d-flex align-items-center gap-2"
+        href="<%= currentUser && currentUser.role === 'admin' ? '/admin' : '/empleado/pedidos/nuevo' %>"
+      >
         <img
           src="/img/quality.png"
           alt="Quality"
@@ -29,18 +37,52 @@
         <span class="fw-semibold">Quality · Sistema de Pedidos</span>
       </a>
 
-      <% 
-        const subtitle =
-          typeof headerSubtitle !== 'undefined' && headerSubtitle
-            ? headerSubtitle
-            : 'Módulo empleado';
+      <%
+        // Texto base del "módulo"
+        let subtitleLabel;
+        if (typeof headerSubtitle !== 'undefined' && headerSubtitle) {
+          subtitleLabel = headerSubtitle;
+        } else if (currentUser && currentUser.role === 'admin') {
+          subtitleLabel = 'Módulo administrador';
+        } else if (currentUser && currentUser.role === 'empleado') {
+          subtitleLabel = 'Módulo empleado';
+        } else {
+          subtitleLabel = 'Sistema de pedidos';
+        }
       %>
 
-      <span class="navbar-text text-white-50 small">
-        <%= subtitle %>
-      </span>
+      <!-- Lado derecho -->
+      <div class="d-flex align-items-center gap-3">
+
+        <% if (currentUser) { %>
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-light btn-sm dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <%= subtitleLabel %>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item" href="/auth/logout">
+                  Cerrar sesión
+                </a>
+              </li>
+            </ul>
+          </div>
+        <% } else { %>
+          <span class="navbar-text text-white-50 small">
+            <%= subtitleLabel %>
+          </span>
+        <% } %>
+
+      </div>
     </div>
   </header>
+  <!-- ================= FIN HEADER ================= -->
 
-  <!-- Main centrado horizontal y vertical (md+), y empujando el footer abajo -->
-  <main class="d-flex justify-content-center align-items-start align-items-md-center flex-grow-1 py-4">
+  <!-- MAIN -->
+  <main class="flex-grow-1 py-4">
+  <div class="container-fluid px-4 admin-container">

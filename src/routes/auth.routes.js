@@ -28,17 +28,38 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
   res.render('auth/login', {
     title: 'Login - Quality',
     error: error === '1',
-    expired: expired === '1',   // 👈 pasamos esta bandera a la vista
+    expired: expired === '1',
   });
 });
 
 // =============================
 //   POST /auth/login
+//   ✅ login por "usuario" (sin pedir correo)
 // =============================
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { usuario, password } = req.body;
 
   try {
+    // 1) Validaciones rápidas
+    if (!usuario || !password) {
+      return res.redirect('/auth/login?error=1');
+    }
+
+    const u = String(usuario).trim().toLowerCase();
+
+    // 2) Convertimos "usuario" a email real de Supabase
+    //    - admin: deja el gmail
+    //    - empleados: e_${usuario}@quality.com
+    let email;
+
+    if (u === 'admin') {
+      email = 'quality.dev.pedidos@gmail.com';
+    } else {
+      // ejemplo: "tampiquito11" => "e_tampiquito11@quality.com"
+      email = `e_${u}@quality.com`;
+    }
+
+    // 3) Login supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -51,24 +72,35 @@ router.post('/login', async (req, res) => {
 
     const user = data.user;
 
+    console.log('=== DEBUG LOGIN SUPABASE ===');
+    console.log('Usuario ingresado:', u);
+    console.log('Email usado:', user.email);
+
+    // 4) Rol según correo
     let role = 'empleado';
-    if (user.user_metadata && user.user_metadata.role) {
-      role = user.user_metadata.role;
+    if (user.email === 'quality.dev.pedidos@gmail.com') {
+      role = 'admin';
     }
 
+    // 5) Guardar sesión
     req.session.user = {
       id: user.id,
       email: user.email,
       role,
+      username: u, // 🔥 útil para mostrarlo en UI si quieres
     };
 
+    console.log('=== SESSION USER DESPUÉS DE LOGIN ===');
+    console.log(req.session.user);
+
+    // 6) Redirección por rol
     if (role === 'admin') {
       return res.redirect('/admin');
     }
 
     return res.redirect('/empleado/pedidos/nuevo');
   } catch (err) {
-    console.error(err);
+    console.error('Error inesperado en /auth/login:', err);
     return res.redirect('/auth/login?error=1');
   }
 });
@@ -78,8 +110,13 @@ router.post('/login', async (req, res) => {
 // =============================
 router.get('/logout', (req, res) => {
   req.session.destroy(() => {
+    // Evitar usar caché después de cerrar sesión
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     res.redirect('/auth/login');
   });
 });
 
-export default router;
+export default router; // 👈 IMPORTANTE

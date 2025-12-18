@@ -2,10 +2,13 @@
 
 export function requireRole(role) {
   return (req, res, next) => {
-    if (!req.session.user) return res.redirect('/auth/login');
+    if (!req.session.user) {
+      // Si no hay sesión, directo al login
+      return res.redirect('/auth/login');
+    }
 
+    // Si el rol NO coincide, lo mandamos a su panel correcto
     if (req.session.user.role !== role) {
-      // Redirigir a su panel correcto
       if (req.session.user.role === 'empleado') {
         return res.redirect('/empleado/pedidos/nuevo');
       }
