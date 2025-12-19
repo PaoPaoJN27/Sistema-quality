@@ -17,6 +17,9 @@ dotenv.config();
 
 const app = express();
 
+// ✅ Render corre detrás de proxy (HTTPS). Esto evita que se “pierda” la cookie de sesión.
+app.set('trust proxy', 1);
+
 // ====== Middlewares base ======
 app.use(cors());
 app.use(express.json());
@@ -31,11 +34,10 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 2,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: true, // ✅ en Render siempre es HTTPS
     },
   })
 );
-
 
 // ====== Desactivar caché del navegador ======
 app.use((req, res, next) => {
@@ -58,20 +60,6 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   next();
 });
-
-// ====== Función: si el usuario YA está autenticado, redirigirlo a su panel ======
-function redirectIfAuthenticated(req, res, next) {
-  if (req.session.user) {
-    const role = req.session.user.role;
-
-    if (role === 'admin') {
-      return res.redirect('/admin');
-    }
-
-    return res.redirect('/empleado/pedidos/nuevo');
-  }
-  next();
-}
 
 // ====== Rutas base API ======
 app.use('/auth', authRoutes);
@@ -98,7 +86,6 @@ app.get('/', (req, res) => {
 });
 
 // Vista del formulario del empleado (protegida)
-
 app.get(
   '/empleado/pedidos/nuevo',
   requireAuth,
