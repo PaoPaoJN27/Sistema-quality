@@ -142,7 +142,7 @@ export async function pdfPreviewPedido(req, res) {
 
     return res.status(200).send(pdfBuffer);
   } catch (err) {
-    console.error('[pdfPreviewPedido] ERROR:', err);
+    console.error('[pdfPreviewPedido] ERROR:', err?.stack || err);
     return res.status(500).json({ ok: false, message: 'No se pudo generar el PDF' });
   }
 }
@@ -200,7 +200,7 @@ export async function pdfPedidoById(req, res) {
 
     return res.status(200).send(pdfBuffer);
   } catch (err) {
-    console.error('[pdfPedidoById] ERROR:', err);
+    console.error('[pdfPedidoById] ERROR:', err?.stack || err);
     return res.status(500).json({ ok: false, message: 'No se pudo generar el PDF oficial' });
   }
 }

@@ -7,11 +7,13 @@ async function launchBrowser() {
   return puppeteer.launch({
     headless: 'new',
     args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-gpu',
+  '--no-zygote',
+  '--single-process',
+],
   });
 }
 
@@ -44,7 +46,7 @@ export async function htmlToPdfBuffer(html) {
   const page = await browser.newPage();
 
   try {
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'networkidle2', timeout: 45000 });
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
