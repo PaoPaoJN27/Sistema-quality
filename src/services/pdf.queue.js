@@ -1,7 +1,7 @@
 // src/services/pdf.queue.js
 import PQueue from 'p-queue';
 
-const CONCURRENCY = Number(process.env.PDF_CONCURRENCY || 1);
+const CONCURRENCY = Number(process.env.PDF_CONCURRENCY || 2);
 
 export const pdfQueue = new PQueue({
   concurrency: CONCURRENCY,
