@@ -7,13 +7,13 @@ async function launchBrowser() {
   return puppeteer.launch({
     headless: 'new',
     args: [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  '--disable-dev-shm-usage',
-  '--disable-gpu',
-  '--no-zygote',
-  '--single-process',
-],
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-zygote',
+      '--single-process',
+    ],
   });
 }
 
@@ -31,7 +31,7 @@ async function getBrowser() {
     throw e;
   }
 
-  // ✅ si Puppeteer/Chrome se murió, relanza
+  // ✅ si Chrome murió, relanza
   if (!browser.isConnected()) {
     try { await browser.close(); } catch {}
     browserPromise = launchBrowser();
@@ -46,13 +46,34 @@ export async function htmlToPdfBuffer(html) {
   const page = await browser.newPage();
 
   try {
-    await page.setContent(html, { waitUntil: 'networkidle2', timeout: 45000 });
+    // 🔥 Evita cuelgues por fonts / recursos lentos
+    await page.setRequestInterception(true);
+
+    page.on('request', (req) => {
+      const type = req.resourceType();
+      if (['font', 'media'].includes(type)) return req.abort();
+      return req.continue();
+    });
+
+    // ✅ CLAVE: no esperar networkidle
+    await page.setContent(html, {
+      waitUntil: 'domcontentloaded',
+      timeout: 180000, // 3 minutos
+    });
+
+    // pequeño respiro para imágenes/logo
+    await page.waitForTimeout(300);
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
       landscape: true,
       printBackground: true,
-      margin: { top: '6mm', right: '6mm', bottom: '6mm', left: '6mm' },
+      margin: {
+        top: '6mm',
+        right: '6mm',
+        bottom: '6mm',
+        left: '6mm',
+      },
     });
 
     return pdfBuffer;
