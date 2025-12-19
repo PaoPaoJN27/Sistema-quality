@@ -3,6 +3,8 @@ import puppeteer from 'puppeteer';
 
 let browserPromise = null;
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function launchBrowser() {
   return puppeteer.launch({
     headless: 'new',
@@ -26,12 +28,10 @@ async function getBrowser() {
   try {
     browser = await browserPromise;
   } catch (e) {
-    // si falló el launch, resetea y reintenta
     browserPromise = null;
     throw e;
   }
 
-  // ✅ si Chrome murió, relanza
   if (!browser.isConnected()) {
     try { await browser.close(); } catch {}
     browserPromise = launchBrowser();
@@ -46,34 +46,29 @@ export async function htmlToPdfBuffer(html) {
   const page = await browser.newPage();
 
   try {
-    // 🔥 Evita cuelgues por fonts / recursos lentos
+    // Evita cuelgues por fonts/media
     await page.setRequestInterception(true);
 
     page.on('request', (req) => {
       const type = req.resourceType();
-      if (['font', 'media'].includes(type)) return req.abort();
+      if (type === 'font' || type === 'media') return req.abort();
       return req.continue();
     });
 
-    // ✅ CLAVE: no esperar networkidle
+    // NO esperar networkidle
     await page.setContent(html, {
       waitUntil: 'domcontentloaded',
-      timeout: 180000, // 3 minutos
+      timeout: 180000, // 3 min
     });
 
-    // pequeño respiro para imágenes/logo
-    await page.waitForTimeout(300);
+    // mini pausa compatible
+    await sleep(300);
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
       landscape: true,
       printBackground: true,
-      margin: {
-        top: '6mm',
-        right: '6mm',
-        bottom: '6mm',
-        left: '6mm',
-      },
+      margin: { top: '6mm', right: '6mm', bottom: '6mm', left: '6mm' },
     });
 
     return pdfBuffer;
