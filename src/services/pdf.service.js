@@ -1,20 +1,42 @@
+// src/services/pdf.service.js
 import puppeteer from 'puppeteer';
 
 let browserPromise = null;
 
+async function launchBrowser() {
+  return puppeteer.launch({
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+    ],
+  });
+}
+
 async function getBrowser() {
   if (!browserPromise) {
-    browserPromise = puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-      ],
-    });
+    browserPromise = launchBrowser();
   }
-  return browserPromise;
+
+  let browser;
+  try {
+    browser = await browserPromise;
+  } catch (e) {
+    // si falló el launch, resetea y reintenta
+    browserPromise = null;
+    throw e;
+  }
+
+  // ✅ si Puppeteer/Chrome se murió, relanza
+  if (!browser.isConnected()) {
+    try { await browser.close(); } catch {}
+    browserPromise = launchBrowser();
+    browser = await browserPromise;
+  }
+
+  return browser;
 }
 
 export async function htmlToPdfBuffer(html) {
@@ -33,17 +55,16 @@ export async function htmlToPdfBuffer(html) {
 
     return pdfBuffer;
   } finally {
-    // ✅ clave: cierras la pestaña, NO el browser
-    await page.close();
+    try { await page.close(); } catch {}
   }
 }
 
-// (Opcional pero recomendable) para apagar limpio si el proceso termina
+// (Opcional) apagar limpio (cuando cierras server)
 export async function closePdfBrowser() {
   if (!browserPromise) return;
   try {
     const b = await browserPromise;
-    await b.close();
+    if (b?.isConnected()) await b.close();
   } catch {}
   browserPromise = null;
 }

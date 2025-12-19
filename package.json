@@ -20,6 +20,6 @@
     "express": "^5.2.1",
     "express-session": "^1.18.2",
     "p-queue": "^9.0.1",
-    "puppeteer": "^24.33.0"
+    "puppeteer": "^24.33.1"
   }
 }

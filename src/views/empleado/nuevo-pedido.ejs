@@ -76,7 +76,8 @@
                 </p>
 
                 <div class="d-grid gap-2">
-                  <a class="btn btn-outline-primary" target="_blank"
+                  <!-- ✅ ahora lo interceptamos con JS para mostrar modal "generando" -->
+                  <a class="btn btn-outline-primary js-open-pdf"
                     href="/pedidos/pdf/<%= pedidoId %>">
                     Imprimir/Descargar PDF
                   </a>
@@ -431,6 +432,64 @@
     pdfForm.submit();
   }
 </script>
+
+<script>
+  function abrirPdfEnOtraPestaña(url) {
+  const pdfTab = window.open('about:blank', '_blank');
+  if (!pdfTab) {
+    alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
+    return;
+  }
+
+  // Pantalla de “generando” en la pestaña nueva
+  try {
+    pdfTab.document.open();
+    pdfTab.document.write(`
+      <!doctype html>
+      <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Generando PDF…</title>
+        <style>
+          body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;display:grid;place-items:center;height:100vh;background:#fff;}
+          .box{display:flex;gap:14px;align-items:center;padding:18px 20px;border:1px solid #eee;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.08);}
+          .spin{width:22px;height:22px;border:3px solid #ddd;border-top-color:#111;border-radius:50%;animation:spin 1s linear infinite;}
+          @keyframes spin{to{transform:rotate(360deg)}}
+          .t1{font-weight:700;}
+          .t2{font-size:12px;color:#666;margin-top:2px;}
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <div class="spin" aria-hidden="true"></div>
+          <div>
+            <div class="t1">Se está generando el PDF…</div>
+            <div class="t2">Espere un momento, puede tardar unos segundos.</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    pdfTab.document.close();
+  } catch {}
+
+  // ✅ Aquí está lo importante:
+  // navegar DIRECTO al endpoint real (no blob)
+  pdfTab.location.href = url;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('a.js-open-pdf').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      abrirPdfEnOtraPestaña(a.getAttribute('href'));
+    });
+  });
+});
+
+</script>
+
 
 <!-- ====== TODO tu JS igual como lo mandaste (no lo toqué) ====== -->
 <!-- (Pegué todo lo demás tal cual para no meter errores) -->
