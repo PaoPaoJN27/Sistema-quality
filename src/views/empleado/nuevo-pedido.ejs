@@ -395,43 +395,112 @@
 </div>
 
 <script>
-  function submitPdfPreview() {
-    const sourceForm = document.querySelector('form.needs-validation');
-    const pdfForm = document.getElementById('pdfPreviewForm');
-    if (!sourceForm || !pdfForm) return;
+  function showPdfLoader() {
+    if (document.getElementById('pdf-loader-overlay')) return;
 
-    pdfForm.innerHTML = '';
-    const fd = new FormData(sourceForm);
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-loader-overlay';
+    overlay.innerHTML = `
+      <div class="pdf-loader-box">
+        <div class="pdf-loader-spin" aria-hidden="true"></div>
+        <div>
+          <div class="pdf-loader-t1">Se está generando el PDF…</div>
+          <div class="pdf-loader-t2">Espere un momento, puede tardar unos segundos.</div>
+        </div>
+      </div>
+    `;
 
-    function setHidden(name, value) {
-      let input = pdfForm.querySelector(`input[name="${name}"]`);
-      if (!input) {
-        input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        pdfForm.appendChild(input);
+    const style = document.createElement('style');
+    style.id = 'pdf-loader-style';
+    style.textContent = `
+      #pdf-loader-overlay{
+        position:fixed; inset:0;
+        background:rgba(255,255,255,.92);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        z-index:99999;
       }
-      input.value = value ?? '';
+      .pdf-loader-box{
+        width:min(560px, 92vw);
+        display:flex;
+        gap:16px;
+        align-items:center;
+        justify-content:center;
+        padding:22px 22px;
+        border:1px solid #eee;
+        border-radius:16px;
+        box-shadow:0 10px 28px rgba(0,0,0,.10);
+        background:#fff;
+      }
+      .pdf-loader-spin{
+        width:28px;height:28px;
+        border:4px solid #ddd;
+        border-top-color:#111;
+        border-radius:50%;
+        animation:pdfspin 1s linear infinite;
+        flex-shrink:0;
+      }
+      @keyframes pdfspin{to{transform:rotate(360deg)}}
+      .pdf-loader-t1{font-weight:800;font-size:16px;text-align:center;}
+      .pdf-loader-t2{font-size:13px;color:#666;margin-top:4px;text-align:center;line-height:1.35;}
+
+      @media (max-width: 768px){
+        .pdf-loader-box{padding:28px 22px;gap:18px;flex-direction:column;}
+        .pdf-loader-spin{width:52px;height:52px;border-width:5px;}
+        .pdf-loader-t1{font-size:20px;}
+        .pdf-loader-t2{font-size:15px;}
+      }
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+  }
+
+  function hidePdfLoader() {
+    document.getElementById('pdf-loader-overlay')?.remove();
+    document.getElementById('pdf-loader-style')?.remove();
+  }
+
+  function abrirPdfEnOtraPestaña(url) {
+    showPdfLoader();
+
+    // IMPORTANTE: window.open debe ser DIRECTO dentro del click (sin await)
+    const tab = window.open(url, '_blank');
+
+    if (!tab) {
+      hidePdfLoader();
+      alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
+      return;
     }
 
-    for (const [k, v] of fd.entries()) setHidden(k, v);
+    // Quitamos loader cuando el usuario regresa a esta pestaña
+    const onVis = () => {
+      if (!document.hidden) {
+        hidePdfLoader();
+        document.removeEventListener('visibilitychange', onVis);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
 
-    setHidden('trabajo_impreso', document.getElementById('trabajo_impreso')?.checked ? 'true' : '');
-    setHidden('trabajo_entregado', document.getElementById('trabajo_entregado')?.checked ? 'true' : '');
-    setHidden('observaciones', document.getElementById('observaciones')?.value || '');
-    setHidden('archivo_carpeta', document.getElementById('archivo_carpeta')?.value || '');
-    setHidden('archivo_nombre', document.getElementById('archivo_nombre')?.value || '');
-    setHidden('archivo_computadora', document.getElementById('archivo_computadora')?.value || '');
-
-    setHidden('folio_preview', document.getElementById('folio_preview')?.value || '');
-    setHidden('resto_preview', document.getElementById('resto_preview')?.value || '');
-
-    setHidden('items_json', document.getElementById('items_json')?.value || '[]');
-    setHidden('descripcion_pedido', document.getElementById('descripcion_pedido')?.value || '');
-
-    pdfForm.submit();
+    // fallback por si no cambia visibilidad
+    setTimeout(hidePdfLoader, 8000);
   }
+
+  // ✅ Event delegation: agarra clicks aunque el botón exista después o esté en modal
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a.js-open-pdf');
+    if (!a) return;
+
+    e.preventDefault();
+    const href = a.getAttribute('href');
+    if (!href) return;
+
+    abrirPdfEnOtraPestaña(href);
+  }, true);
 </script>
+
 
 <script>
   function showPdfLoader() {
