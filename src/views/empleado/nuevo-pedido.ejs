@@ -393,101 +393,109 @@
     </div>
   </div>
 </div>
+
 <script>
-function abrirPdfEnOtraPestaña(url) {
-  const pdfTab = window.open('about:blank', '_blank');
-  if (!pdfTab) {
-    alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
-    return;
-  }
+  function showPdfLoader() {
+    if (document.getElementById('pdf-loader-overlay')) return;
 
-  try {
-    const safeUrl = String(url).replace(/'/g, "%27"); // evita romper el string
-
-    pdfTab.document.open();
-    pdfTab.document.write(`
-      <!doctype html>
-      <html lang="es">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Generando PDF…</title>
-        <style>
-          html,body{height:100%;margin:0;}
-          body{
-            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-            display:grid;
-            place-items:center;
-            background:#fff;
-            padding:16px;
-          }
-          .box{
-            width:min(520px, 100%);
-            display:flex;
-            gap:16px;
-            align-items:center;
-            justify-content:center;
-            padding:22px 22px;
-            border:1px solid #eee;
-            border-radius:16px;
-            box-shadow:0 10px 28px rgba(0,0,0,.10);
-            background:#fff;
-          }
-          .spin{
-            width:28px;height:28px;
-            border:4px solid #ddd;
-            border-top-color:#111;
-            border-radius:50%;
-            animation:spin 1s linear infinite;
-            flex-shrink:0;
-          }
-          @keyframes spin{to{transform:rotate(360deg)}}
-          .t1{font-weight:800;font-size:16px;text-align:center;}
-          .t2{font-size:13px;color:#666;margin-top:4px;text-align:center;line-height:1.35;}
-
-          /* 📱 móvil */
-          @media (max-width: 768px) {
-            .box{padding:28px 22px;gap:18px;flex-direction:column;}
-            .spin{width:52px;height:52px;border-width:5px;}
-            .t1{font-size:20px;}
-            .t2{font-size:15px;}
-          }
-        </style>
-      </head>
-      <body>
-        <div class="box">
-          <div class="spin" aria-hidden="true"></div>
-          <div>
-            <div class="t1">Se está generando el PDF…</div>
-            <div class="t2">Espere un momento, puede tardar unos segundos.</div>
-          </div>
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-loader-overlay';
+    overlay.innerHTML = `
+      <div class="pdf-loader-box">
+        <div class="pdf-loader-spin" aria-hidden="true"></div>
+        <div>
+          <div class="pdf-loader-t1">Se está generando el PDF…</div>
+          <div class="pdf-loader-t2">Espere un momento, puede tardar unos segundos.</div>
         </div>
+      </div>
+    `;
 
-        <script>
-          // 👇 clave: deja que pinte el loader primero
-          setTimeout(() => {
-            location.replace('${safeUrl}');
-          }, 650);
-        <\/script>
-      </body>
-      </html>
-    `);
-    pdfTab.document.close();
-  } catch {
-    // fallback
-    try { pdfTab.location.href = url; } catch {}
+    const style = document.createElement('style');
+    style.id = 'pdf-loader-style';
+    style.textContent = `
+      #pdf-loader-overlay{
+        position:fixed; inset:0;
+        background:rgba(255,255,255,.92);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        z-index:99999;
+      }
+      .pdf-loader-box{
+        width:min(520px, 100%);
+        display:flex;
+        gap:16px;
+        align-items:center;
+        justify-content:center;
+        padding:22px 22px;
+        border:1px solid #eee;
+        border-radius:16px;
+        box-shadow:0 10px 28px rgba(0,0,0,.10);
+        background:#fff;
+        text-align:center;
+      }
+      .pdf-loader-spin{
+        width:28px;height:28px;
+        border:4px solid #ddd;
+        border-top-color:#111;
+        border-radius:50%;
+        animation:pdfspin 1s linear infinite;
+        flex-shrink:0;
+      }
+      @keyframes pdfspin{to{transform:rotate(360deg)}}
+      .pdf-loader-t1{font-weight:800;font-size:16px;}
+      .pdf-loader-t2{font-size:13px;color:#666;margin-top:4px;line-height:1.35;}
+
+      @media (max-width: 768px){
+        .pdf-loader-box{padding:28px 22px;gap:18px;flex-direction:column;}
+        .pdf-loader-spin{width:52px;height:52px;border-width:5px;}
+        .pdf-loader-t1{font-size:20px;}
+        .pdf-loader-t2{font-size:15px;}
+      }
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
   }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('a.js-open-pdf').forEach(a => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      abrirPdfEnOtraPestaña(a.getAttribute('href'));
+  function hidePdfLoader() {
+    document.getElementById('pdf-loader-overlay')?.remove();
+    document.getElementById('pdf-loader-style')?.remove();
+  }
+
+  function abrirPdfEnOtraPestaña(url) {
+    showPdfLoader();
+
+    const tab = window.open(url, '_blank');
+    if (!tab) {
+      hidePdfLoader();
+      alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
+      return;
+    }
+
+    const onVis = () => {
+      if (!document.hidden) {
+        hidePdfLoader();
+        document.removeEventListener('visibilitychange', onVis);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    setTimeout(hidePdfLoader, 2500);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a.js-open-pdf').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        abrirPdfEnOtraPestaña(a.getAttribute('href'));
+      });
     });
   });
-});
 </script>
+
+
 
 <!-- ====== TODO tu JS igual como lo mandaste (no lo toqué) ====== -->
 <!-- (Pegué todo lo demás tal cual para no meter errores) -->
