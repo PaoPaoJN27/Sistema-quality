@@ -52,7 +52,7 @@
             <div class="modal-content border-0 shadow">
               <div class="modal-header">
                 <h5 class="modal-title">Pedido registrado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" aria-label="Close" id="btnSuccessClose" ></button>
               </div>
 
               <div class="modal-body">
@@ -72,7 +72,7 @@
 
                 <% if (typeof pedidoId !== 'undefined' && pedidoId && String(pedidoId).trim() !== '') { %>
                 <p class="text-muted small mb-2">
-                  PDF oficial listo (con folio real).
+                  PDF oficial listo.
                 </p>
 
                 <div class="d-grid gap-2">
@@ -93,9 +93,6 @@
               </div>
 
               <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                  Cerrar
-                </button>
                 <button type="button" class="btn btn-primary" id="btnSuccessNuevo">
                   Nuevo pedido
                 </button>
@@ -1225,16 +1222,20 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const successModalEl = document.getElementById('successPedidoModal');
-    if (successModalEl && window.bootstrap?.Modal) {
-      const m = new bootstrap.Modal(successModalEl);
-      m.show();
-    }
+  const successModalEl = document.getElementById('successPedidoModal');
+  if (successModalEl && window.bootstrap?.Modal) {
+    const m = new bootstrap.Modal(successModalEl);
+    m.show();
+  }
 
-    document.getElementById('btnSuccessNuevo')?.addEventListener('click', () => {
-      window.location.href = '/empleado/pedidos/nuevo';
-    });
-  });
+  const goNuevo = () => {
+    window.location.href = '/empleado/pedidos/nuevo';
+  };
+
+  document.getElementById('btnSuccessNuevo')?.addEventListener('click', goNuevo);
+  document.getElementById('btnSuccessClose')?.addEventListener('click', goNuevo);
+});
+
 </script>
 
 <%- include('../partials/footer') %>
