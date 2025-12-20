@@ -395,110 +395,114 @@
 </div>
 
 <script>
-  function showPdfLoader() {
-    if (document.getElementById('pdf-loader-overlay')) return;
+function abrirPdfEnOtraPestaña(url) {
+  const pdfTab = window.open('about:blank', '_blank');
+  if (!pdfTab) {
+    alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
+    return;
+  }
 
-    const overlay = document.createElement('div');
-    overlay.id = 'pdf-loader-overlay';
-    overlay.innerHTML = `
-      <div class="pdf-loader-box">
-        <div class="pdf-loader-spin" aria-hidden="true"></div>
-        <div>
-          <div class="pdf-loader-t1">Se está generando el PDF…</div>
-          <div class="pdf-loader-t2">Espere un momento, puede tardar unos segundos.</div>
+  try {
+    const safeUrl = String(url).replace(/'/g, "%27");
+
+    pdfTab.document.open();
+    pdfTab.document.write(`
+      <!doctype html>
+      <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <!-- ✅ IMPORTANTE: viewport + safe-area -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <title>Generando PDF…</title>
+        <style>
+          :root{
+            /* ✅ tamaños fluidos que funcionan aunque el media-query falle */
+            --pad: clamp(18px, 5vw, 34px);
+            --gap: clamp(12px, 4vw, 22px);
+            --radius: 18px;
+            --shadow: 0 10px 28px rgba(0,0,0,.10);
+
+            --spin: clamp(34px, 10vw, 58px);
+            --bw: clamp(4px, 1.2vw, 6px);
+
+            --t1: clamp(18px, 5vw, 22px);
+            --t2: clamp(14px, 4vw, 16px);
+          }
+
+          html, body { height: 100%; margin: 0; }
+          body{
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            padding: 18px;
+          }
+
+          .box{
+            width: min(560px, 100%);
+            display: flex;
+            gap: var(--gap);
+            align-items: center;
+            justify-content: center;
+            padding: var(--pad);
+            border: 1px solid #eee;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            background: #fff;
+            text-align: center;
+          }
+
+          .spin{
+            width: var(--spin);
+            height: var(--spin);
+            border: var(--bw) solid #ddd;
+            border-top-color: #111;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            flex: 0 0 auto;
+          }
+
+          @keyframes spin { to { transform: rotate(360deg); } }
+
+          .t1{ font-weight: 800; font-size: var(--t1); }
+          .t2{ font-size: var(--t2); color: #666; margin-top: 6px; line-height: 1.35; }
+
+          /* ✅ En móvil apila, pero aunque no aplique, clamp ya lo hace grande */
+          @media (max-width: 768px){
+            .box{ flex-direction: column; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <div class="spin" aria-hidden="true"></div>
+          <div>
+            <div class="t1">Se está generando el PDF…</div>
+            <div class="t2">Espere un momento, puede tardar unos segundos.</div>
+          </div>
         </div>
-      </div>
-    `;
 
-    const style = document.createElement('style');
-    style.id = 'pdf-loader-style';
-    style.textContent = `
-      #pdf-loader-overlay{
-        position:fixed; inset:0;
-        background:rgba(255,255,255,.92);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:16px;
-        z-index:99999;
-      }
-      .pdf-loader-box{
-        width:min(560px, 92vw);
-        display:flex;
-        gap:16px;
-        align-items:center;
-        justify-content:center;
-        padding:22px 22px;
-        border:1px solid #eee;
-        border-radius:16px;
-        box-shadow:0 10px 28px rgba(0,0,0,.10);
-        background:#fff;
-      }
-      .pdf-loader-spin{
-        width:28px;height:28px;
-        border:4px solid #ddd;
-        border-top-color:#111;
-        border-radius:50%;
-        animation:pdfspin 1s linear infinite;
-        flex-shrink:0;
-      }
-      @keyframes pdfspin{to{transform:rotate(360deg)}}
-      .pdf-loader-t1{font-weight:800;font-size:16px;text-align:center;}
-      .pdf-loader-t2{font-size:13px;color:#666;margin-top:4px;text-align:center;line-height:1.35;}
-
-      @media (max-width: 768px){
-        .pdf-loader-box{padding:28px 22px;gap:18px;flex-direction:column;}
-        .pdf-loader-spin{width:52px;height:52px;border-width:5px;}
-        .pdf-loader-t1{font-size:20px;}
-        .pdf-loader-t2{font-size:15px;}
-      }
-    `;
-
-    document.head.appendChild(style);
-    document.body.appendChild(overlay);
+        <script>
+          // ✅ Deja que pinte el loader antes de navegar
+          setTimeout(() => location.replace('${safeUrl}'), 250);
+        <\/script>
+      </body>
+      </html>
+    `);
+    pdfTab.document.close();
+  } catch (e) {
+    try { pdfTab.location.href = url; } catch {}
   }
+}
 
-  function hidePdfLoader() {
-    document.getElementById('pdf-loader-overlay')?.remove();
-    document.getElementById('pdf-loader-style')?.remove();
-  }
-
-  function abrirPdfEnOtraPestaña(url) {
-    showPdfLoader();
-
-    // IMPORTANTE: window.open debe ser DIRECTO dentro del click (sin await)
-    const tab = window.open(url, '_blank');
-
-    if (!tab) {
-      hidePdfLoader();
-      alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
-      return;
-    }
-
-    // Quitamos loader cuando el usuario regresa a esta pestaña
-    const onVis = () => {
-      if (!document.hidden) {
-        hidePdfLoader();
-        document.removeEventListener('visibilitychange', onVis);
-      }
-    };
-    document.addEventListener('visibilitychange', onVis);
-
-    // fallback por si no cambia visibilidad
-    setTimeout(hidePdfLoader, 8000);
-  }
-
-  // ✅ Event delegation: agarra clicks aunque el botón exista después o esté en modal
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a.js-open-pdf');
-    if (!a) return;
-
-    e.preventDefault();
-    const href = a.getAttribute('href');
-    if (!href) return;
-
-    abrirPdfEnOtraPestaña(href);
-  }, true);
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('a.js-open-pdf').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      abrirPdfEnOtraPestaña(a.getAttribute('href'));
+    });
+  });
+});
 </script>
 
 
