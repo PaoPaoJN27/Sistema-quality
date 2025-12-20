@@ -393,81 +393,100 @@
     </div>
   </div>
 </div>
-
 <script>
-  function abrirPdfEnOtraPestaña(url) {
-    const pdfTab = window.open('about:blank', '_blank');
-    if (!pdfTab) {
-      alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
-      return;
-    }
-
-    try {
-      pdfTab.document.open();
-      pdfTab.document.write(`
-        <!doctype html>
-        <html lang="es">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Generando PDF…</title>
-          <style>
-            body{
-              font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-              margin:0;
-              display:grid;
-              place-items:center;
-              height:100vh;
-              background:#fff;
-            }
-            .box{
-              display:flex;
-              gap:14px;
-              align-items:center;
-              padding:18px 20px;
-              border:1px solid #eee;
-              border-radius:14px;
-              box-shadow:0 6px 24px rgba(0,0,0,.08);
-            }
-            .spin{
-              width:22px;
-              height:22px;
-              border:3px solid #ddd;
-              border-top-color:#111;
-              border-radius:50%;
-              animation:spin 1s linear infinite;
-            }
-            @keyframes spin{to{transform:rotate(360deg)}}
-            .t1{font-weight:700;}
-            .t2{font-size:12px;color:#666;margin-top:2px;}
-          </style>
-        </head>
-        <body>
-          <div class="box">
-            <div class="spin" aria-hidden="true"></div>
-            <div>
-              <div class="t1">Se está generando el PDF…</div>
-              <div class="t2">Espere un momento, puede tardar unos segundos.</div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `);
-      pdfTab.document.close();
-    } catch {}
-
-    // 👉 navegar directo al endpoint del PDF
-    pdfTab.location.href = url;
+function abrirPdfEnOtraPestaña(url) {
+  const pdfTab = window.open('about:blank', '_blank');
+  if (!pdfTab) {
+    alert('El navegador bloqueó la pestaña del PDF. Activa popups para este sitio.');
+    return;
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('a.js-open-pdf').forEach(a => {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        abrirPdfEnOtraPestaña(a.getAttribute('href'));
-      });
+  try {
+    const safeUrl = String(url).replace(/'/g, "%27"); // evita romper el string
+
+    pdfTab.document.open();
+    pdfTab.document.write(`
+      <!doctype html>
+      <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Generando PDF…</title>
+        <style>
+          html,body{height:100%;margin:0;}
+          body{
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            display:grid;
+            place-items:center;
+            background:#fff;
+            padding:16px;
+          }
+          .box{
+            width:min(520px, 100%);
+            display:flex;
+            gap:16px;
+            align-items:center;
+            justify-content:center;
+            padding:22px 22px;
+            border:1px solid #eee;
+            border-radius:16px;
+            box-shadow:0 10px 28px rgba(0,0,0,.10);
+            background:#fff;
+          }
+          .spin{
+            width:28px;height:28px;
+            border:4px solid #ddd;
+            border-top-color:#111;
+            border-radius:50%;
+            animation:spin 1s linear infinite;
+            flex-shrink:0;
+          }
+          @keyframes spin{to{transform:rotate(360deg)}}
+          .t1{font-weight:800;font-size:16px;text-align:center;}
+          .t2{font-size:13px;color:#666;margin-top:4px;text-align:center;line-height:1.35;}
+
+          /* 📱 móvil */
+          @media (max-width: 768px) {
+            .box{padding:28px 22px;gap:18px;flex-direction:column;}
+            .spin{width:52px;height:52px;border-width:5px;}
+            .t1{font-size:20px;}
+            .t2{font-size:15px;}
+          }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <div class="spin" aria-hidden="true"></div>
+          <div>
+            <div class="t1">Se está generando el PDF…</div>
+            <div class="t2">Espere un momento, puede tardar unos segundos.</div>
+          </div>
+        </div>
+
+        <script>
+          // 👇 clave: deja que pinte el loader primero
+          setTimeout(() => {
+            location.replace('${safeUrl}');
+          }, 650);
+        <\/script>
+      </body>
+      </html>
+    `);
+    pdfTab.document.close();
+  } catch {
+    // fallback
+    try { pdfTab.location.href = url; } catch {}
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('a.js-open-pdf').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      abrirPdfEnOtraPestaña(a.getAttribute('href'));
     });
   });
+});
 </script>
 
 <!-- ====== TODO tu JS igual como lo mandaste (no lo toqué) ====== -->
