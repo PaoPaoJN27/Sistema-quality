@@ -160,7 +160,7 @@
         <thead class="table-light">
           <tr>
             <th scope="col" class="text-nowrap sticky-folio col-folio">Folio</th>
-            <th scope="col" class="text-nowrap">Cliente</th>
+            <th scope="col" class="text-nowrap col-cliente">Cliente</th>
             <th scope="col" class="text-nowrap">Teléfono</th>
 
             <th scope="col" class="admin-th-resizable">
@@ -195,7 +195,12 @@
             <tr>
               <td class="text-nowrap sticky-folio col-folio"><%= p.folio_num ? p.folio_num : '-' %></td>
 
-              <td class="text-nowrap"><%= p.nombre_cliente || '-' %></td>
+              <td class="col-cliente">
+                <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                  <%= p.nombre_cliente || '-' %>
+                </div>
+              </td>
+
               <td class="text-nowrap"><%= p.telefono_cliente || '-' %></td>
 
               <!-- ✅ Descripción colapsable con click -->

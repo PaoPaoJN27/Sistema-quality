@@ -34,8 +34,8 @@
    Descripción colapsable
    ========================= */
 .admin-col-desc{ 
-  width: 140px;         /* ✅ ancho base */
-  min-width: 120px;     /* ✅ ahora sí puede ser más chico */
+  width: 130px;         /* ✅ ancho base */
+  min-width: 110px;     /* ✅ ahora sí puede ser más chico */
   max-width: 220px;     /* ✅ evita que se estire */
 }
 
@@ -47,6 +47,11 @@
   white-space: normal;
   word-break: break-word;
   cursor: pointer;
+}
+.col-cliente{
+  width: 190px;
+  min-width: 150px;
+  max-width: 220px;
 }
 .cell-collapse.is-open{
   -webkit-line-clamp: unset;
@@ -174,6 +179,11 @@
   }
   .admin-col-desc{
     width: 140px;
+    min-width: 120px;
+    max-width: 180px;
+  }
+  .col-cliente{
+    width: 150px;
     min-width: 120px;
     max-width: 180px;
   }
