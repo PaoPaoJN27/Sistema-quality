@@ -6,46 +6,66 @@
   margin: 0 auto;
 }
 
-.admin-table td, .admin-table th {
-  padding: .45rem .5rem !important;
-  font-size: .9rem;
-  vertical-align: middle;
-}
-
-.admin-table{
+/* =========================
+   TABLA: tamaño general (responsive)
+   - clamp() evita que en pantallas chicas se “vea enorme”
+   ========================= */
+.admin-table {
   width: 100%;
-  table-layout: auto;
+
+  /* ✅ CLAVE: evita que el contenido “estire” columnas */
+  table-layout: fixed;
 
   /* FIX sticky + striped */
   border-collapse: separate !important;
   border-spacing: 0 !important;
-}
-/* === Zoom visual tipo navegador, pero solo para la tabla === */
-.admin-table-scale{
-  transform: scale(.9);          /* prueba .92, .9, .88 */
-  transform-origin: top left;
-  width: calc(100% / .9);        /* compensa el scale para que quepa en el wrapper */
+
+  /* ✅ tamaño general de la tabla */
+  font-size: clamp(0.78rem, 0.85vw, 0.90rem);
 }
 
+/* celdas */
+.admin-table td,
+.admin-table th {
+  padding: clamp(0.30rem, 0.6vw, 0.45rem) clamp(0.35rem, 0.7vw, 0.50rem) !important;
+  vertical-align: middle;
+}
 
 /* =========================
    Compact columns
    ========================= */
-.col-folio { width: 48px; min-width: 48px; text-align: center; font-weight: 600; }
-.col-sucursal { width: 48px; min-width: 48px; text-align: center; }
-.col-yn { width: 50px; min-width: 50px; text-align: center; }
+.col-folio {
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  text-align: center;
+  font-weight: 600;
+}
 
-.col-obs{ min-width: 160px; max-width: 260px; }
+.col-sucursal { width: 56px; min-width: 56px; max-width: 56px; text-align: center; }
+.col-yn      { width: 56px; min-width: 56px; max-width: 56px; text-align: center; }
+
+.col-obs { width: 220px; min-width: 180px; max-width: 260px; }
 
 /* =========================
-   Descripción colapsable
+   Descripción (tu columna resizable)
    ========================= */
-.admin-col-desc{ 
-  width: 110px;        /* ⬅ más chica */
-  min-width: 90px;
-  max-width: 150px;   /* ⬅ evita que se estire */
+.admin-col-desc{
+  width: 140px;      /* ancho base */
+  min-width: 120px;
+  max-width: 260px;
 }
-/* Base (Descripción = 2 líneas) */
+
+/* =========================
+   Cliente: más chico + ellipsis + click expand
+   ========================= */
+.col-cliente{
+  width: 130px;      /* 👈 AQUÍ lo cambias leve */
+  min-width: 110px;
+  max-width: 150px;
+}
+
+/* Base para “colapsables” */
 .cell-collapse{
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -55,57 +75,56 @@
   word-break: break-word;
   cursor: pointer;
 }
-
-/* ✅ CLIENTE más chica (columna fija compacta) */
-.col-cliente{
-  width: 120px;
-  min-width: 100px;
-  max-width: 140px;
-}
-
-/* ✅ CLIENTE: igual que Descripción pero 1 línea (clamp), click => expande */
-.col-cliente .cell-collapse{
-  -webkit-line-clamp: 2; /* 1 línea */
-}
-
-/* Al abrir (tu JS pone .is-open), ahora sí muestra completo */
 .cell-collapse.is-open{
   -webkit-line-clamp: unset;
   overflow: visible;
 }
 
-/* =========================
-   Carpeta / Archivo / PC
-   - ancho fijo (no crece)
-   - 2 líneas + "..."
-   - click => se expande
-   ========================= */
-.col-carpeta, .col-archivo, .col-pc{
-  width: 140px;
-  min-width: 120px;
-  max-width: 160px;
+/* Cliente: 1 línea con "…" */
+.col-cliente .cell-collapse{
+  display: block;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: initial !important;
+}
+.col-cliente .cell-collapse.is-open{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
 }
 
-/* para que estas columnas se comporten como "Descripción" (clamp 2 líneas) */
+/* =========================
+   Carpeta / Archivo / PC
+   (mismo efecto que Cliente: ellipsis + click expand)
+   ========================= */
+.col-carpeta { width: 110px; min-width: 90px;  max-width: 120px; }
+.col-archivo { width: 110px; min-width: 90px;  max-width: 120px; }
+.col-pc      { width: 90px;  min-width: 70px;  max-width: 100px; }
+
+/* en estas columnas lo queremos en 1 línea + "…" */
 .col-carpeta .cell-collapse,
 .col-archivo .cell-collapse,
 .col-pc .cell-collapse{
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
+  display: block;
+  white-space: nowrap !important;
   overflow: hidden !important;
-  white-space: normal !important;
-  word-break: break-word !important;
-}
+  text-overflow: ellipsis !important;
 
-/* al abrir, muestra completo */
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: initial !important;
+}
 .col-carpeta .cell-collapse.is-open,
 .col-archivo .cell-collapse.is-open,
 .col-pc .cell-collapse.is-open{
-  -webkit-line-clamp: unset !important;
+  white-space: normal !important;
   overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
 }
-
 
 /* =========================
    Obs expandible
@@ -115,31 +134,30 @@
   word-break: break-word;
 }
 .obs-btn{
-  font-size: .8rem;
+  font-size: .8em;
   text-decoration: none;
 }
 
-/* ==== Evitar que datos cortos se expandan demasiado ==== */
+/* =========================
+   Evitar que datos cortos se expandan demasiado
+   ========================= */
 .admin-table td.text-nowrap,
 .admin-table th.text-nowrap {
   white-space: nowrap;
 }
 
-/* ==== Columna redimensionable (tu feature) ==== */
+/* =========================
+   Columna redimensionable (tu feature)
+   ========================= */
 .admin-th-resizable {
   position: relative;
   white-space: nowrap;
 }
-.admin-th-label {
-  display: inline-block;
-  padding-right: 8px;
-}
+.admin-th-label { display: inline-block; padding-right: 8px; }
 .admin-col-resizer {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 6px;
-  height: 100%;
+  top: 0; right: 0;
+  width: 6px; height: 100%;
   cursor: col-resize;
   user-select: none;
 }
@@ -147,13 +165,14 @@
   border-right: 2px solid rgba(0, 0, 0, 0.25);
 }
 
-/* ==== Mini icono de ayuda ? ==== */
+/* =========================
+   Mini icono de ayuda ?
+   ========================= */
 .help-qmark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 16px; height: 16px;
   font-size: 11px;
   line-height: 1;
   border-radius: 999px;
@@ -173,10 +192,7 @@
   gap: .5rem;
   margin: .25rem 0 .5rem;
 }
-.table-nav .btn {
-  line-height: 1;
-  padding: .35rem .55rem;
-}
+.table-nav .btn { line-height: 1; padding: .35rem .55rem; }
 
 /* Oculta la barra horizontal pero deja el scroll funcional */
 .admin-table-wrapper {
@@ -184,9 +200,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
-.admin-table-wrapper::-webkit-scrollbar {
-  display: none;
-}
+.admin-table-wrapper::-webkit-scrollbar { display: none; }
 
 /* =========================
    Sticky Folio (columna fija)
@@ -195,7 +209,6 @@
 .admin-table td.sticky-folio{
   position: sticky;
   left: 0;
-  min-width: 48px;
 
   background-color: #fff !important;
   background-clip: padding-box;
@@ -215,51 +228,29 @@
 .admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{
   background-color: #fff !important;
 }
+
 /* =========================
-   Sí / No compacto (Imp. / Entr.)
+   📱 Ajuste fino para móvil
    ========================= */
-.yn-text{
-  display: inline-block;
-  min-width: 36px;
-  text-align: center;
-  font-weight: 600;
-  font-size: .85rem;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-
-.yn-yes{
-  color: #198754;            /* verde Bootstrap */
-  background: rgba(25,135,84,.12);
-}
-
-.yn-no{
-  color: #dc3545;            /* rojo Bootstrap */
-  background: rgba(220,53,69,.12);
-}
-
-
-/* 📱 Ajuste fino para móvil */
 @media (max-width: 768px) {
   .admin-container {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
-  .admin-table td, .admin-table th {
-    font-size: .85rem;
-    padding: .35rem .4rem !important;
-  }
+
+  /* baja un poquito más en móvil */
+  .admin-table { font-size: 0.78rem; }
+
   .admin-col-desc{
-    width: 140px;
+    width: 135px;
     min-width: 120px;
-    max-width: 180px;
+    max-width: 220px;
   }
 
-  /* ✅ Cliente compacta en móvil también */
   .col-cliente{
-    width: 130px;
-    min-width: 110px;
-    max-width: 150px;
+    width: 120px;   /* 👈 leve ajuste en móvil */
+    min-width: 100px;
+    max-width: 140px;
   }
 
   .col-obs { max-width: 220px; }
