@@ -269,20 +269,17 @@
 
               <!-- ✅ Impreso / Entregado compactos -->
               <td class="text-nowrap col-yn">
-                <span 
-                  class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-danger' %>"
-                  title="<%= p.trabajo_impreso ? 'Sí impreso' : 'No impreso' %>">
-                  <%= p.trabajo_impreso ? '✔' : '✖' %>
+                <span class="yn-text <%= p.trabajo_impreso ? 'yn-yes' : 'yn-no' %>">
+                  <%= p.trabajo_impreso ? 'Sí' : 'No' %>
                 </span>
               </td>
 
               <td class="text-nowrap col-yn">
-                <span 
-                  class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-danger' %>"
-                  title="<%= p.trabajo_entregado ? 'Sí entregado' : 'No entregado' %>">
-                  <%= p.trabajo_entregado ? '✔' : '✖' %>
+                <span class="yn-text <%= p.trabajo_entregado ? 'yn-yes' : 'yn-no' %>">
+                  <%= p.trabajo_entregado ? 'Sí' : 'No' %>
                 </span>
               </td>
+
 
 
               <!-- ✅ Observaciones expandibles -->

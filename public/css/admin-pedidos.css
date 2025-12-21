@@ -34,7 +34,7 @@
    Descripción colapsable
    ========================= */
 .admin-col-desc{ 
-  width: 130px;         /* ✅ ancho base */
+  width: 110px;         /* ✅ ancho base */
   min-width: 110px;     /* ✅ ahora sí puede ser más chico */
   max-width: 220px;     /* ✅ evita que se estire */
 }
@@ -52,9 +52,9 @@
 
 /* ✅ CLIENTE más chica (columna fija compacta) */
 .col-cliente{
-  width: 125px;
-  min-width: 120px;
-  max-width: 160px;
+  width: 120px;
+  min-width: 100px;
+  max-width: 140px;
 }
 
 /* ✅ CLIENTE: igual que Descripción pero 1 línea (clamp), click => expande */
@@ -176,6 +176,29 @@
 .admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{
   background-color: #fff !important;
 }
+/* =========================
+   Sí / No compacto (Imp. / Entr.)
+   ========================= */
+.yn-text{
+  display: inline-block;
+  min-width: 36px;
+  text-align: center;
+  font-weight: 600;
+  font-size: .85rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.yn-yes{
+  color: #198754;            /* verde Bootstrap */
+  background: rgba(25,135,84,.12);
+}
+
+.yn-no{
+  color: #dc3545;            /* rojo Bootstrap */
+  background: rgba(220,53,69,.12);
+}
+
 
 /* 📱 Ajuste fino para móvil */
 @media (max-width: 768px) {
