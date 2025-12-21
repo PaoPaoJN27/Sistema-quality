@@ -52,7 +52,7 @@
 
 /* ✅ CLIENTE más chica (columna fija compacta) */
 .col-cliente{
-  width: 135px;
+  width: 125px;
   min-width: 120px;
   max-width: 160px;
 }
