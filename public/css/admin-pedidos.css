@@ -21,10 +21,15 @@
 .admin-table td, .admin-table th{
   padding: .42rem .48rem !important;
   vertical-align: middle;
+
+  /* ✅ evita palabras largas que rompen el layout */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================
    Column widths (CLAVE)
+   NOTA: esto funciona solo si estos class están en <th> y <td>
    ========================= */
 .col-folio { width: 56px; min-width: 56px; max-width: 56px; text-align:center; font-weight:600; }
 .col-cliente { width: 130px; min-width: 110px; max-width: 150px; }
@@ -41,15 +46,17 @@
 .col-yn { width: 56px; min-width: 56px; max-width: 56px; text-align:center; }
 .col-obs{ width: 220px; min-width: 180px; max-width: 260px; }
 
-.col-carpeta { width: 110px; min-width: 90px; max-width: 120px; }
-.col-archivo { width: 110px; min-width: 90px; max-width: 120px; }
-.col-pc      { width: 90px;  min-width: 70px; max-width: 100px; }
+.col-carpeta { width: 110px; min-width: 90px; max-width: 130px; }
+.col-archivo { width: 120px; min-width: 100px; max-width: 150px; }
+.col-pc      { width: 90px;  min-width: 70px;  max-width: 110px; }
 
 .col-estado  { width: 110px; min-width: 110px; max-width: 110px; text-align:center; }
 .col-acciones{ width: 210px; min-width: 200px; max-width: 240px; }
 
 /* =========================
    Descripción (tu columna resizable)
+   IMPORTANTE: si tu <th> no tiene class "admin-col-desc",
+   no va a respetar el ancho. (con table-layout: fixed esto importa mucho)
    ========================= */
 .admin-col-desc{
   width: 160px;
@@ -59,10 +66,11 @@
 
 /* =========================
    NO WRAP para cosas que no deben bajarse
+   (ojo: col-tel etc son clases de columna, no del texto)
    ========================= */
-.nowrap, 
-.col-tel, 
-.col-money, 
+.nowrap,
+.col-tel,
+.col-money,
 .col-date,
 .col-sucursal,
 .col-factura,
@@ -73,6 +81,7 @@
 
 /* =========================
    Cell collapse base (2 líneas)
+   (por default, 2 líneas para textos largos)
    ========================= */
 .cell-collapse{
   display: -webkit-box;
@@ -88,12 +97,16 @@
   overflow: visible;
 }
 
-/* Cliente: 1 línea con "..." */
+/* =========================
+   Cliente: 1 línea con "..." (click => expand)
+   ========================= */
 .col-cliente .cell-collapse{
-  display:block;
+  display:block !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+
+  /* desactiva el clamp global */
   -webkit-line-clamp: 1 !important;
   -webkit-box-orient: initial !important;
 }
@@ -104,14 +117,18 @@
   -webkit-line-clamp: unset !important;
 }
 
-/* Carpeta/Archivo/PC igual que cliente */
+/* =========================
+   Carpeta / Archivo / PC: 1 línea + ellipsis (igual que cliente)
+   ========================= */
 .col-carpeta .cell-collapse,
 .col-archivo .cell-collapse,
 .col-pc .cell-collapse{
-  display:block;
+  display:block !important;
   white-space: nowrap !important;
   overflow:hidden !important;
   text-overflow: ellipsis !important;
+
+  /* desactiva el clamp global */
   -webkit-line-clamp: 1 !important;
   -webkit-box-orient: initial !important;
 }
@@ -131,6 +148,12 @@
 .admin-table td.sticky-folio{
   position: sticky;
   left: 0;
+
+  /* ✅ ancho fijo (sticky necesita esto para no deformarse) */
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+
   background-color: #fff !important;
   background-clip: padding-box;
   z-index: 30;
@@ -153,57 +176,28 @@
   scrollbar-width:none;
 }
 .admin-table-wrapper::-webkit-scrollbar{ display:none; }
+
 /* =========================
-   Carpeta / Archivo / PC: 1 línea + ellipsis
-   click => se expande (igual que cliente)
+   Fix: que los <th> NO se “peguen” (DescripciónSuc.)
    ========================= */
-
-/* ancho fijo/compacto para que no se estiren con texto largo */
-.col-carpeta { width: 110px; min-width: 90px; max-width: 130px; }
-.col-archivo { width: 120px; min-width: 100px; max-width: 150px; }
-.col-pc      { width: 90px;  min-width: 70px;  max-width: 110px; }
-
-/* comportamiento tipo "Cliente": 1 línea con … */
-.col-carpeta .cell-collapse,
-.col-archivo .cell-collapse,
-.col-pc .cell-collapse{
-  display: block !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-
-  /* desactiva el clamp global de 2 líneas */
-  -webkit-line-clamp: 1 !important;
-  -webkit-box-orient: initial !important;
+.admin-table thead th{
+  white-space: nowrap;
 }
-
-/* cuando se abre (tu JS pone .is-open) */
-.col-carpeta .cell-collapse.is-open,
-.col-archivo .cell-collapse.is-open,
-.col-pc .cell-collapse.is-open{
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  -webkit-line-clamp: unset !important;
-}
-
-/* 📱 ajuste móvil */
-@media (max-width: 768px) {
-  .col-carpeta { width: 95px;  min-width: 80px;  max-width: 115px; }
-  .col-archivo { width: 105px; min-width: 90px;  max-width: 130px; }
-  .col-pc      { width: 80px;  min-width: 65px;  max-width: 95px;  }
-}
-
 
 /* =========================
    Mobile
    ========================= */
 @media (max-width: 768px){
   .admin-container{ padding-left:12px !important; padding-right:12px !important; }
+
   .admin-table{ font-size: .80rem; }
   .admin-table td, .admin-table th{ padding: .35rem .40rem !important; }
 
   .col-cliente{ width: 120px; min-width: 100px; max-width: 140px; }
   .admin-col-desc{ width: 150px; min-width: 130px; max-width: 260px; }
   .col-obs{ width: 200px; min-width: 170px; max-width: 240px; }
+
+  .col-carpeta { width: 95px;  min-width: 80px;  max-width: 115px; }
+  .col-archivo { width: 105px; min-width: 90px;  max-width: 130px; }
+  .col-pc      { width: 80px;  min-width: 65px;  max-width: 95px;  }
 }
