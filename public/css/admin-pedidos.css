@@ -153,6 +153,47 @@
   scrollbar-width:none;
 }
 .admin-table-wrapper::-webkit-scrollbar{ display:none; }
+/* =========================
+   Carpeta / Archivo / PC: 1 línea + ellipsis
+   click => se expande (igual que cliente)
+   ========================= */
+
+/* ancho fijo/compacto para que no se estiren con texto largo */
+.col-carpeta { width: 110px; min-width: 90px; max-width: 130px; }
+.col-archivo { width: 120px; min-width: 100px; max-width: 150px; }
+.col-pc      { width: 90px;  min-width: 70px;  max-width: 110px; }
+
+/* comportamiento tipo "Cliente": 1 línea con … */
+.col-carpeta .cell-collapse,
+.col-archivo .cell-collapse,
+.col-pc .cell-collapse{
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  /* desactiva el clamp global de 2 líneas */
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: initial !important;
+}
+
+/* cuando se abre (tu JS pone .is-open) */
+.col-carpeta .cell-collapse.is-open,
+.col-archivo .cell-collapse.is-open,
+.col-pc .cell-collapse.is-open{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+}
+
+/* 📱 ajuste móvil */
+@media (max-width: 768px) {
+  .col-carpeta { width: 95px;  min-width: 80px;  max-width: 115px; }
+  .col-archivo { width: 105px; min-width: 90px;  max-width: 130px; }
+  .col-pc      { width: 80px;  min-width: 65px;  max-width: 95px;  }
+}
+
 
 /* =========================
    Mobile
