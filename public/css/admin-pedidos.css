@@ -36,19 +36,19 @@
 .col-folio   { width: 52px;  min-width: 52px;  max-width: 52px;  text-align:center; font-weight:600; }
 .col-cliente { width: 105px; min-width: 95px;  max-width: 120px; }
 
-.col-tel     { width: 104px; min-width: 104px; max-width: 104px; }
+.col-tel     { width: 94px; min-width: 94px; max-width: 94px; }
 .col-sucursal{ width: 50px;  min-width: 50px;  max-width: 50px;  text-align:center; }
 .col-factura { width: 62px;  min-width: 62px;  max-width: 62px;  text-align:center; }
 
 .col-money   { width: 86px;  min-width: 86px;  max-width: 86px;  text-align:center; }
-.col-enc     { width: 74px;  min-width: 68px;  max-width: 82px;  }
+.col-enc     { width: 72px;  min-width: 68px;  max-width: 78px;  }
 
 .col-date    { width: 104px; min-width: 104px; max-width: 104px; text-align:center; }
 
 .col-yn      { width: 50px;  min-width: 50px;  max-width: 50px;  text-align:center; }
 
 /* ✅ Obs controlado (más angosto para que entre Acciones) */
-.col-obs     { width: 170px; min-width: 150px; max-width: 180px; }
+.col-obs     { width: 155px; min-width: 140px; max-width: 170px; }
 
 .col-carpeta { width: 90px;  min-width: 80px;  max-width: 95px; }
 .col-archivo { width: 90px;  min-width: 80px;  max-width: 95px; }
@@ -57,15 +57,15 @@
 .col-estado  { width: 100px; min-width: 100px; max-width: 100px; text-align:center; }
 
 /* ✅ Acciones compacta */
-.col-acciones{ width: 170px; min-width: 160px; max-width: 180px; }
+.col-acciones{ width: 160px; min-width: 160px; max-width: 170px; }
 
 /* =========================
    Descripción (tu columna resizable)
    ========================= */
 .admin-col-desc{
-  width: 140px;
-  min-width: 120px;
-  max-width: 230px;
+  width: 120px;
+  min-width: 110px;
+  max-width: 200px;
 }
 
 /* =========================
@@ -167,7 +167,7 @@
 .col-acciones form{
   display: inline-flex !important;
   flex-wrap: nowrap !important;
-  gap: .35rem !important;
+  gap: .25rem !important;
 }
 .col-acciones .btn{
   padding: .25rem .45rem !important;
