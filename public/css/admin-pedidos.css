@@ -34,8 +34,8 @@
    Descripción colapsable
    ========================= */
 .admin-col-desc{ 
-  width: 160px;         /* ✅ ancho base */
-  min-width: 140px;     /* ✅ ahora sí puede ser más chico */
+  width: 140px;         /* ✅ ancho base */
+  min-width: 120px;     /* ✅ ahora sí puede ser más chico */
   max-width: 220px;     /* ✅ evita que se estire */
 }
 
