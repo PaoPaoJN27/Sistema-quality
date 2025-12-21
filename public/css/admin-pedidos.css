@@ -167,6 +167,30 @@
   background-color: #fff !important;
 }
 
+/* =========================
+   CLIENTE: 1 línea + "…"
+   click => se expande
+   ========================= */
+.col-cliente .cell-collapse{
+  display: block;              /* para que ellipsis funcione bien */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  /* anula el clamp de 2 líneas que tienes global */
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: initial !important;
+}
+
+/* cuando se abre (tu JS pone .is-open), ahora sí muestra completo */
+.col-cliente .cell-collapse.is-open{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+}
+
+
 /* 📱 Ajuste fino para móvil */
 @media (max-width: 768px) {
   .admin-container {
