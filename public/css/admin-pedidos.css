@@ -1,71 +1,79 @@
 /* public/css/admin-pedidos.css */
 
 /* ==== Panel admin ancho ==== */
-.admin-container {
-  max-width: 100%;
-  margin: 0 auto;
-}
+.admin-container { max-width: 100%; margin: 0 auto; }
 
 /* =========================
-   TABLA: tamaño general (responsive)
-   - clamp() evita que en pantallas chicas se “vea enorme”
+   TABLA
    ========================= */
-.admin-table {
+.admin-table{
   width: 100%;
 
-  /* ✅ CLAVE: evita que el contenido “estire” columnas */
+  /* ✅ fija columnas (para que NO se estiren al llenarse) */
   table-layout: fixed;
 
-  /* FIX sticky + striped */
   border-collapse: separate !important;
   border-spacing: 0 !important;
 
-  /* ✅ tamaño general de la tabla */
-  font-size: clamp(0.78rem, 0.85vw, 0.90rem);
+  font-size: .88rem;
 }
 
-/* celdas */
-.admin-table td,
-.admin-table th {
-  padding: clamp(0.30rem, 0.6vw, 0.45rem) clamp(0.35rem, 0.7vw, 0.50rem) !important;
+.admin-table td, .admin-table th{
+  padding: .42rem .48rem !important;
   vertical-align: middle;
 }
 
 /* =========================
-   Compact columns
+   Column widths (CLAVE)
    ========================= */
-.col-folio {
-  width: 56px;
-  min-width: 56px;
-  max-width: 56px;
-  text-align: center;
-  font-weight: 600;
-}
+.col-folio { width: 56px; min-width: 56px; max-width: 56px; text-align:center; font-weight:600; }
+.col-cliente { width: 130px; min-width: 110px; max-width: 150px; }
 
-.col-sucursal { width: 56px; min-width: 56px; max-width: 56px; text-align: center; }
-.col-yn      { width: 56px; min-width: 56px; max-width: 56px; text-align: center; }
+.col-tel { width: 110px; min-width: 110px; max-width: 110px; }
+.col-sucursal { width: 56px; min-width: 56px; max-width: 56px; text-align:center; }
+.col-factura { width: 70px; min-width: 70px; max-width: 70px; text-align:center; }
 
-.col-obs { width: 220px; min-width: 180px; max-width: 260px; }
+.col-money { width: 92px; min-width: 92px; max-width: 92px; text-align:center; }
+.col-enc { width: 100px; min-width: 90px; max-width: 110px; }
+
+.col-date { width: 112px; min-width: 112px; max-width: 112px; text-align:center; }
+
+.col-yn { width: 56px; min-width: 56px; max-width: 56px; text-align:center; }
+.col-obs{ width: 220px; min-width: 180px; max-width: 260px; }
+
+.col-carpeta { width: 110px; min-width: 90px; max-width: 120px; }
+.col-archivo { width: 110px; min-width: 90px; max-width: 120px; }
+.col-pc      { width: 90px;  min-width: 70px; max-width: 100px; }
+
+.col-estado  { width: 110px; min-width: 110px; max-width: 110px; text-align:center; }
+.col-acciones{ width: 210px; min-width: 200px; max-width: 240px; }
 
 /* =========================
    Descripción (tu columna resizable)
    ========================= */
 .admin-col-desc{
-  width: 140px;      /* ancho base */
-  min-width: 120px;
-  max-width: 260px;
+  width: 160px;
+  min-width: 140px;
+  max-width: 320px;
 }
 
 /* =========================
-   Cliente: más chico + ellipsis + click expand
+   NO WRAP para cosas que no deben bajarse
    ========================= */
-.col-cliente{
-  width: 130px;      /* 👈 AQUÍ lo cambias leve */
-  min-width: 110px;
-  max-width: 150px;
+.nowrap, 
+.col-tel, 
+.col-money, 
+.col-date,
+.col-sucursal,
+.col-factura,
+.col-estado,
+.col-acciones{
+  white-space: nowrap !important;
 }
 
-/* Base para “colapsables” */
+/* =========================
+   Cell collapse base (2 líneas)
+   ========================= */
 .cell-collapse{
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -80,13 +88,12 @@
   overflow: visible;
 }
 
-/* Cliente: 1 línea con "…" */
+/* Cliente: 1 línea con "..." */
 .col-cliente .cell-collapse{
-  display: block;
+  display:block;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-
   -webkit-line-clamp: 1 !important;
   -webkit-box-orient: initial !important;
 }
@@ -97,23 +104,14 @@
   -webkit-line-clamp: unset !important;
 }
 
-/* =========================
-   Carpeta / Archivo / PC
-   (mismo efecto que Cliente: ellipsis + click expand)
-   ========================= */
-.col-carpeta { width: 110px; min-width: 90px;  max-width: 120px; }
-.col-archivo { width: 110px; min-width: 90px;  max-width: 120px; }
-.col-pc      { width: 90px;  min-width: 70px;  max-width: 100px; }
-
-/* en estas columnas lo queremos en 1 línea + "…" */
+/* Carpeta/Archivo/PC igual que cliente */
 .col-carpeta .cell-collapse,
 .col-archivo .cell-collapse,
 .col-pc .cell-collapse{
-  display: block;
+  display:block;
   white-space: nowrap !important;
-  overflow: hidden !important;
+  overflow:hidden !important;
   text-overflow: ellipsis !important;
-
   -webkit-line-clamp: 1 !important;
   -webkit-box-orient: initial !important;
 }
@@ -127,131 +125,44 @@
 }
 
 /* =========================
-   Obs expandible
-   ========================= */
-.obs-wrap{
-  white-space: normal;
-  word-break: break-word;
-}
-.obs-btn{
-  font-size: .8em;
-  text-decoration: none;
-}
-
-/* =========================
-   Evitar que datos cortos se expandan demasiado
-   ========================= */
-.admin-table td.text-nowrap,
-.admin-table th.text-nowrap {
-  white-space: nowrap;
-}
-
-/* =========================
-   Columna redimensionable (tu feature)
-   ========================= */
-.admin-th-resizable {
-  position: relative;
-  white-space: nowrap;
-}
-.admin-th-label { display: inline-block; padding-right: 8px; }
-.admin-col-resizer {
-  position: absolute;
-  top: 0; right: 0;
-  width: 6px; height: 100%;
-  cursor: col-resize;
-  user-select: none;
-}
-.admin-th-resizable:hover .admin-col-resizer {
-  border-right: 2px solid rgba(0, 0, 0, 0.25);
-}
-
-/* =========================
-   Mini icono de ayuda ?
-   ========================= */
-.help-qmark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px; height: 16px;
-  font-size: 11px;
-  line-height: 1;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.25);
-  color: rgba(0,0,0,.55);
-  cursor: help;
-  user-select: none;
-}
-
-/* =========================
-   BOTONES PARA MOVER TABLA
-   ========================= */
-.table-nav {
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  gap: .5rem;
-  margin: .25rem 0 .5rem;
-}
-.table-nav .btn { line-height: 1; padding: .35rem .55rem; }
-
-/* Oculta la barra horizontal pero deja el scroll funcional */
-.admin-table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.admin-table-wrapper::-webkit-scrollbar { display: none; }
-
-/* =========================
-   Sticky Folio (columna fija)
+   Sticky Folio
    ========================= */
 .admin-table th.sticky-folio,
 .admin-table td.sticky-folio{
   position: sticky;
   left: 0;
-
   background-color: #fff !important;
   background-clip: padding-box;
-
   z-index: 30;
   box-shadow: 4px 0 8px -6px rgba(0,0,0,.25);
 }
 .admin-table thead th.sticky-folio{
   background-color: #f8f9fa !important;
-  z-index: 30;
 }
 
-/* Zebra SOLO en el folio */
-.admin-table.table-striped > tbody > tr:nth-of-type(odd) > td.sticky-folio{
-  background-color: #f2f2f2 !important;
-}
-.admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{
-  background-color: #fff !important;
-}
+/* Zebra SOLO en folio */
+.admin-table.table-striped > tbody > tr:nth-of-type(odd) > td.sticky-folio{ background:#f2f2f2 !important; }
+.admin-table.table-striped > tbody > tr:nth-of-type(even)> td.sticky-folio{ background:#fff !important; }
 
 /* =========================
-   📱 Ajuste fino para móvil
+   Wrapper scroll
    ========================= */
-@media (max-width: 768px) {
-  .admin-container {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
+.admin-table-wrapper{
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width:none;
+}
+.admin-table-wrapper::-webkit-scrollbar{ display:none; }
 
-  /* baja un poquito más en móvil */
-  .admin-table { font-size: 0.78rem; }
+/* =========================
+   Mobile
+   ========================= */
+@media (max-width: 768px){
+  .admin-container{ padding-left:12px !important; padding-right:12px !important; }
+  .admin-table{ font-size: .80rem; }
+  .admin-table td, .admin-table th{ padding: .35rem .40rem !important; }
 
-  .admin-col-desc{
-    width: 135px;
-    min-width: 120px;
-    max-width: 220px;
-  }
-
-  .col-cliente{
-    width: 120px;   /* 👈 leve ajuste en móvil */
-    min-width: 100px;
-    max-width: 140px;
-  }
-
-  .col-obs { max-width: 220px; }
+  .col-cliente{ width: 120px; min-width: 100px; max-width: 140px; }
+  .admin-col-desc{ width: 150px; min-width: 130px; max-width: 260px; }
+  .col-obs{ width: 200px; min-width: 170px; max-width: 240px; }
 }
