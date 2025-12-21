@@ -6,35 +6,79 @@
   margin: 0 auto;
 }
 
-.admin-table {
+.admin-table td, .admin-table th {
+  padding: .45rem .5rem !important;
+  font-size: .9rem;
+  vertical-align: middle;
+}
+
+.admin-table{
   width: 100%;
   table-layout: auto;
+
+  /* FIX sticky + striped */
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
 }
 
-/* Descripción con ancho base cómodo */
-.admin-col-desc {
-  width: clamp(260px, 28vw, 700px);
-  max-width: 700px;
-  white-space: nowrap;
+/* =========================
+   Compact columns
+   ========================= */
+.col-folio { width: 64px; min-width: 64px; text-align: center; font-weight: 600; }
+.col-sucursal { width: 64px; min-width: 64px; text-align: center; }
+.col-yn { width: 74px; min-width: 74px; text-align: center; }
+
+.col-obs{ min-width: 160px; max-width: 260px; }
+
+/* =========================
+   Descripción colapsable
+   ========================= */
+.admin-col-desc{ 
+  min-width: 180px;
+  max-width: 420px;
 }
 
-/* Evitar que datos cortos se expandan demasiado */
+.cell-collapse{
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+  cursor: pointer;
+}
+.cell-collapse.is-open{
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+/* =========================
+   Obs expandible
+   ========================= */
+.obs-wrap{
+  white-space: normal;
+  word-break: break-word;
+}
+.obs-btn{
+  font-size: .8rem;
+  text-decoration: none;
+}
+
+/* ==== Evitar que datos cortos se expandan demasiado ==== */
 .admin-table td.text-nowrap,
 .admin-table th.text-nowrap {
   white-space: nowrap;
 }
 
-/* ==== Columna redimensionable ==== */
+/* ==== Columna redimensionable (tu feature) ==== */
 .admin-th-resizable {
   position: relative;
   white-space: nowrap;
 }
-
 .admin-th-label {
   display: inline-block;
   padding-right: 8px;
 }
-
 .admin-col-resizer {
   position: absolute;
   top: 0;
@@ -44,7 +88,6 @@
   cursor: col-resize;
   user-select: none;
 }
-
 .admin-th-resizable:hover .admin-col-resizer {
   border-right: 2px solid rgba(0, 0, 0, 0.25);
 }
@@ -64,25 +107,17 @@
   cursor: help;
   user-select: none;
 }
-.admin-col-desc{
-  width: auto;            /* <- clave */
-  max-width: none;
-  min-width: 160px;       /* opcional: para que no se haga mini */
-  white-space: normal;
-  word-break: break-word; /* para que corte bonito */
-}
 
 /* =========================
    BOTONES PARA MOVER TABLA
    ========================= */
 .table-nav {
-  display: none; /* se activa por JS solo si hay overflow real */
+  display: none;
   align-items: center;
   justify-content: flex-end;
   gap: .5rem;
   margin: .25rem 0 .5rem;
 }
-
 .table-nav .btn {
   line-height: 1;
   padding: .35rem .55rem;
@@ -92,25 +127,10 @@
 .admin-table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
-
 .admin-table-wrapper::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-/* =========================
-   Sticky Folio (columna fija)
-   ========================= */
-
-/* Base sticky para TH y TD */
-.admin-table{
-  width: 100%;
-  table-layout: auto;
-
-  /* 🔥 FIX sticky + bootstrap striped (evita “transparencias”) */
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
+  display: none;
 }
 
 /* =========================
@@ -120,8 +140,7 @@
 .admin-table td.sticky-folio{
   position: sticky;
   left: 0;
-  width: 80px;
-  min-width: 80px;
+  min-width: 64px;
 
   background-color: #fff !important;
   background-clip: padding-box;
@@ -129,48 +148,29 @@
   z-index: 30;
   box-shadow: 4px 0 8px -6px rgba(0,0,0,.25);
 }
-
-
-/* header del folio (arriba) */
 .admin-table thead th.sticky-folio{
   background-color: #f8f9fa !important;
   z-index: 30;
 }
 
-/* Zebra SOLO en el folio (para que combine con striped) */
+/* Zebra SOLO en el folio */
 .admin-table.table-striped > tbody > tr:nth-of-type(odd) > td.sticky-folio{
-  background-color: #f2f2f2 !important; /* parecido al striped de BS */
+  background-color: #f2f2f2 !important;
 }
 .admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{
   background-color: #fff !important;
 }
-.items-mini { 
-  font-size: 12px;
-  line-height: 1.2;
-}
 
-.items-mini-table th,
-.items-mini-table td {
-  padding: 2px 6px !important;
-  vertical-align: top;
-}
-
-.items-mini-table thead th {
-  font-weight: 600;
-  color: #555;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.items-mini-desc {
-  white-space: normal;
-}
 /* 📱 Ajuste fino para móvil */
 @media (max-width: 768px) {
   .admin-container {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
+  .admin-table td, .admin-table th {
+    font-size: .85rem;
+    padding: .35rem .4rem !important;
+  }
+  .admin-col-desc { max-width: 280px; }
+  .col-obs { max-width: 220px; }
 }
-
-
-
