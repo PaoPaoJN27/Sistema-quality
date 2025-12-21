@@ -25,7 +25,7 @@
    Compact columns
    ========================= */
 .col-folio { width: 48px; min-width: 48px; text-align: center; font-weight: 600; }
-.col-sucursal { width: 64px; min-width: 64px; text-align: center; }
+.col-sucursal { width: 48px; min-width: 48px; text-align: center; }
 .col-yn { width: 50px; min-width: 50px; text-align: center; }
 
 .col-obs{ min-width: 160px; max-width: 260px; }
