@@ -284,16 +284,23 @@
                 </td>
 
                 <!-- ✅ Observaciones expandibles -->
+                <!-- ✅ Observaciones expandibles (AHORA también clickeable) -->
                 <td class="col-obs">
                   <div class="obs-wrap">
-                    <span class="obs-preview"><%= shortText(p.observaciones, 45) %></span>
+                    <!-- ✅ ahora sí: mismo comportamiento que cliente/desc -->
+                    <div class="cell-collapse js-toggle-cell obs-preview" title="Click para ver completo">
+                      <%= shortText(p.observaciones, 45) %>
+                    </div>
 
                     <% if ((p.observaciones || '').length > 45) { %>
-                      <span class="obs-full d-none"><%= p.observaciones %></span>
+                      <div class="obs-full d-none">
+                        <%= p.observaciones %>
+                      </div>
                       <button type="button" class="btn btn-link btn-sm p-0 obs-btn js-obs-btn">Ver más</button>
                     <% } %>
                   </div>
                 </td>
+
 
                 <td class="col-carpeta">
                   <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
