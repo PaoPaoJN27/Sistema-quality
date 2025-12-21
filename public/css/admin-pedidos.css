@@ -39,6 +39,7 @@
   max-width: 220px;     /* ✅ evita que se estire */
 }
 
+/* Base (Descripción = 2 líneas) */
 .cell-collapse{
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -48,11 +49,20 @@
   word-break: break-word;
   cursor: pointer;
 }
+
+/* ✅ CLIENTE más chica (columna fija compacta) */
 .col-cliente{
-  width: 190px;
-  min-width: 150px;
-  max-width: 220px;
+  width: 140px;
+  min-width: 120px;
+  max-width: 160px;
 }
+
+/* ✅ CLIENTE: igual que Descripción pero 1 línea (clamp), click => expande */
+.col-cliente .cell-collapse{
+  -webkit-line-clamp: 1; /* 1 línea */
+}
+
+/* Al abrir (tu JS pone .is-open), ahora sí muestra completo */
 .cell-collapse.is-open{
   -webkit-line-clamp: unset;
   overflow: visible;
@@ -167,30 +177,6 @@
   background-color: #fff !important;
 }
 
-/* =========================
-   CLIENTE: 1 línea + "…"
-   click => se expande
-   ========================= */
-.col-cliente .cell-collapse{
-  display: block;              /* para que ellipsis funcione bien */
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-
-  /* anula el clamp de 2 líneas que tienes global */
-  -webkit-line-clamp: 1 !important;
-  -webkit-box-orient: initial !important;
-}
-
-/* cuando se abre (tu JS pone .is-open), ahora sí muestra completo */
-.col-cliente .cell-collapse.is-open{
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  -webkit-line-clamp: unset !important;
-}
-
-
 /* 📱 Ajuste fino para móvil */
 @media (max-width: 768px) {
   .admin-container {
@@ -206,10 +192,13 @@
     min-width: 120px;
     max-width: 180px;
   }
+
+  /* ✅ Cliente compacta en móvil también */
   .col-cliente{
-    width: 150px;
-    min-width: 120px;
-    max-width: 180px;
+    width: 130px;
+    min-width: 110px;
+    max-width: 150px;
   }
+
   .col-obs { max-width: 220px; }
 }
