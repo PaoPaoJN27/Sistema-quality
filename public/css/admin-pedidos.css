@@ -20,6 +20,13 @@
   border-collapse: separate !important;
   border-spacing: 0 !important;
 }
+/* === Zoom visual tipo navegador, pero solo para la tabla === */
+.admin-table-scale{
+  transform: scale(.9);          /* prueba .92, .9, .88 */
+  transform-origin: top left;
+  width: calc(100% / .9);        /* compensa el scale para que quepa en el wrapper */
+}
+
 
 /* =========================
    Compact columns
