@@ -15,10 +15,13 @@
 }
 
 .admin-table td, .admin-table th{
-  padding: .38rem .42rem !important; /* ✅ más compacto */
+  padding: .38rem .42rem !important; /* ✅ compacto */
   vertical-align: middle;
-  overflow: hidden;                  /* ✅ evita que se monten */
-  text-overflow: ellipsis;           /* ✅ "..." si se pasa */
+
+  /* ✅ IMPORTANTE:
+     NO recortes aquí, porque te corta botones (Acciones) */
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 /* Headers no se enciman */
@@ -31,35 +34,38 @@
    Asegúrate de usar estas clases en TH y TD
    ========================= */
 .col-folio   { width: 52px;  min-width: 52px;  max-width: 52px;  text-align:center; font-weight:600; }
-.col-cliente { width: 112px; min-width: 100px; max-width: 128px; } /* ✅ más chico */
+.col-cliente { width: 105px; min-width: 95px;  max-width: 120px; }
 
 .col-tel     { width: 104px; min-width: 104px; max-width: 104px; }
 .col-sucursal{ width: 50px;  min-width: 50px;  max-width: 50px;  text-align:center; }
 .col-factura { width: 62px;  min-width: 62px;  max-width: 62px;  text-align:center; }
 
 .col-money   { width: 86px;  min-width: 86px;  max-width: 86px;  text-align:center; }
-.col-enc     { width: 82px;  min-width: 72px;  max-width: 90px;  } /* ✅ más chico */
+.col-enc     { width: 74px;  min-width: 68px;  max-width: 82px;  }
 
 .col-date    { width: 104px; min-width: 104px; max-width: 104px; text-align:center; }
 
 .col-yn      { width: 50px;  min-width: 50px;  max-width: 50px;  text-align:center; }
 
-.col-obs     { width: 200px; min-width: 170px; max-width: 230px; } /* ✅ NO la hagas gigante */
+/* ✅ Obs controlado (más angosto para que entre Acciones) */
+.col-obs     { width: 170px; min-width: 150px; max-width: 180px; }
 
-.col-carpeta { width: 95px;  min-width: 80px;  max-width: 110px; }
-.col-archivo { width: 100px; min-width: 85px;  max-width: 120px; }
-.col-pc      { width: 80px;  min-width: 65px;  max-width: 95px;  }
+.col-carpeta { width: 90px;  min-width: 80px;  max-width: 95px; }
+.col-archivo { width: 90px;  min-width: 80px;  max-width: 95px; }
+.col-pc      { width: 70px;  min-width: 60px;  max-width: 75px; }
 
 .col-estado  { width: 100px; min-width: 100px; max-width: 100px; text-align:center; }
-.col-acciones{ width: 190px; min-width: 180px; max-width: 220px; }
+
+/* ✅ Acciones compacta */
+.col-acciones{ width: 170px; min-width: 160px; max-width: 180px; }
 
 /* =========================
-   Descripción (más compacta)
+   Descripción (tu columna resizable)
    ========================= */
 .admin-col-desc{
-  width: 150px;        /* ✅ más chico */
-  min-width: 130px;
-  max-width: 260px;
+  width: 140px;
+  min-width: 120px;
+  max-width: 230px;
 }
 
 /* =========================
@@ -70,6 +76,21 @@
 .col-sucursal, .col-factura,
 .col-estado, .col-acciones{
   white-space: nowrap !important;
+}
+
+/* =========================
+   SOLO estas columnas recortan con ellipsis
+   (para que no se estiren)
+   ========================= */
+.col-cliente,
+.col-tel,
+.admin-col-desc,
+.col-obs,
+.col-carpeta,
+.col-archivo,
+.col-pc{
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* =========================
@@ -126,7 +147,7 @@
 }
 
 /* =========================
-   Observaciones (NO romper layout)
+   Observaciones (botón Ver más)
    ========================= */
 .obs-wrap{
   white-space: normal;
@@ -135,6 +156,28 @@
 .obs-btn{
   font-size: .78rem;
   text-decoration: none;
+}
+
+/* =========================
+   Acciones: NO recortar y compactar
+   ========================= */
+.col-acciones{
+  overflow: visible !important; /* ✅ nunca cortar botón */
+}
+.col-acciones form{
+  display: inline-flex !important;
+  flex-wrap: nowrap !important;
+  gap: .35rem !important;
+}
+.col-acciones .btn{
+  padding: .25rem .45rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
+}
+.col-acciones .form-select{
+  padding: .22rem 1.4rem .22rem .45rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
 }
 
 /* =========================
@@ -167,76 +210,6 @@
 }
 .admin-table-wrapper::-webkit-scrollbar{ display:none; }
 
-/* ====== AJUSTES FINOS (al final) ====== */
-
-/* más angosto */
-.col-cliente { width: 105px; min-width: 95px; max-width: 120px; }
-.admin-col-desc { width: 140px; min-width: 120px; max-width: 230px; }
-.col-enc { width: 74px; min-width: 68px; max-width: 82px; }
-
-/* Obs: más controlado (no gigante) */
-.col-obs { width: 190px; min-width: 160px; max-width: 210px; }
-
-/* Para que Obs use el mismo “clamp” visual al hacer click */
-.col-obs .cell-collapse{
-  cursor: pointer;
-}
-/* =========================
-   AJUSTE PARA QUE ENTRE "ACCIONES"
-   (pegar al FINAL)
-   ========================= */
-
-/* 1) OBS más angosta */
-.col-obs{
-  width: 170px !important;
-  min-width: 150px !important;
-  max-width: 180px !important;
-}
-
-/* 2) Carpeta/Archivo/PC más angostos */
-.col-carpeta{
-  width: 90px !important;
-  min-width: 80px !important;
-  max-width: 95px !important;
-}
-.col-archivo{
-  width: 90px !important;
-  min-width: 80px !important;
-  max-width: 95px !important;
-}
-.col-pc{
-  width: 70px !important;
-  min-width: 60px !important;
-  max-width: 75px !important;
-}
-
-/* 3) Acciones más compacta (CLAVE) */
-.col-acciones{
-  width: 170px !important;
-  min-width: 160px !important;
-  max-width: 180px !important;
-}
-
-/* 4) Dentro de acciones: reduce espacio */
-.col-acciones form{
-  gap: .35rem !important;
-}
-
-/* 5) Botón actualizar más chico (sin romper) */
-.col-acciones .btn{
-  padding: .25rem .45rem !important;
-  font-size: .78rem !important;
-  line-height: 1.1 !important;
-}
-
-/* 6) Select de estado más chico */
-.col-acciones .form-select{
-  padding: .22rem 1.4rem .22rem .45rem !important;
-  font-size: .78rem !important;
-  line-height: 1.1 !important;
-}
-
-
 /* =========================
    Mobile
    ========================= */
@@ -246,7 +219,9 @@
   .admin-table td, .admin-table th{ padding: .32rem .36rem !important; }
 
   .col-cliente { width: 105px; min-width: 95px; max-width: 120px; }
-  .admin-col-desc{ width: 140px; min-width: 125px; max-width: 230px; }
-  .col-obs{ width: 185px; min-width: 160px; max-width: 210px; }
+  .admin-col-desc{ width: 140px; min-width: 120px; max-width: 230px; }
+  .col-obs{ width: 170px; min-width: 150px; max-width: 180px; }
   .col-enc{ width: 76px; min-width: 70px; max-width: 86px; }
+
+  .col-acciones{ width: 170px; min-width: 160px; max-width: 180px; }
 }
