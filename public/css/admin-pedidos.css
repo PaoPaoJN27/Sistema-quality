@@ -68,6 +68,39 @@
 }
 
 /* =========================
+   Carpeta / Archivo / PC
+   - ancho fijo (no crece)
+   - 2 líneas + "..."
+   - click => se expande
+   ========================= */
+.col-carpeta, .col-archivo, .col-pc{
+  width: 140px;
+  min-width: 120px;
+  max-width: 160px;
+}
+
+/* para que estas columnas se comporten como "Descripción" (clamp 2 líneas) */
+.col-carpeta .cell-collapse,
+.col-archivo .cell-collapse,
+.col-pc .cell-collapse{
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+/* al abrir, muestra completo */
+.col-carpeta .cell-collapse.is-open,
+.col-archivo .cell-collapse.is-open,
+.col-pc .cell-collapse.is-open{
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+}
+
+
+/* =========================
    Obs expandible
    ========================= */
 .obs-wrap{

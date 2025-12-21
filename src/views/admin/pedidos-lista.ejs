@@ -294,9 +294,24 @@
                 </div>
               </td>
 
-              <td class="text-nowrap"><%= p.archivo_carpeta || '-' %></td>
-              <td class="text-nowrap"><%= p.archivo_nombre || '-' %></td>
-              <td class="text-nowrap"><%= p.archivo_computadora || '-' %></td>
+                <td class="col-carpeta">
+                  <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                    <%= p.archivo_carpeta || '-' %>
+                  </div>
+                </td>
+
+              <td class="col-archivo">
+                <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                  <%= p.archivo_nombre || '-' %>
+                </div>
+              </td>
+
+              <td class="col-pc">
+                <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                  <%= p.archivo_computadora || '-' %>
+                </div>
+              </td>
+
 
               <td class="text-nowrap">
                 <%
