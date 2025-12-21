@@ -52,14 +52,14 @@
 
 /* ✅ CLIENTE más chica (columna fija compacta) */
 .col-cliente{
-  width: 140px;
+  width: 135px;
   min-width: 120px;
   max-width: 160px;
 }
 
 /* ✅ CLIENTE: igual que Descripción pero 1 línea (clamp), click => expande */
 .col-cliente .cell-collapse{
-  -webkit-line-clamp: 1; /* 1 línea */
+  -webkit-line-clamp: 2; /* 1 línea */
 }
 
 /* Al abrir (tu JS pone .is-open), ahora sí muestra completo */
