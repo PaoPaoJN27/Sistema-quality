@@ -47,7 +47,7 @@
    - Firefox: transform + width calc (para que no se "congele")
    ====================================================== */
 #historialTableWrapper .admin-table-scale{
-  --admin-scale: .88; /* más grande, evita que se vea mini */
+  --admin-scale: .82; /* más grande, evita que se vea mini */
 }
 
 /* ✅ CHROME/EDGE */
@@ -101,7 +101,7 @@
   border-collapse: separate !important;
   border-spacing: 0 !important;
   margin-bottom: 0 !important;
-  font-size: .90rem;   /* un pelín más grande */
+  font-size: .88rem;   /* un pelín más grande */
 }
 
 #historialTableWrapper .historial-table td,
