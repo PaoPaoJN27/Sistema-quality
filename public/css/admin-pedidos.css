@@ -1,66 +1,93 @@
 /* public/css/admin-pedidos.css */
 
 /* ==== Panel admin ancho ==== */
-.admin-container {
+.admin-container{
   max-width: 100%;
   margin: 0 auto;
 }
 
 /* ======================================================
-   ✅ WRAPPER (scroll SOLO cuando sea necesario)
-   - En PC: sin barra visible (pero SI hay scroll si hace falta)
-   - En móvil/tablet: que sí aparezca/funcione el scroll (flechas)
-   - Quita el espacio feo abajo
+   ✅ WRAPPER
+   - PC: NO scroll (sin flechas, no se mueve)
+   - Tablet/Móvil (y cuando haces zoom): SÍ scroll si hace falta
+   - Sin huecos abajo
    ====================================================== */
 .admin-table-wrapper{
-  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-
-  /* 🔥 evita el hueco gigante abajo */
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
-
-  /* PC: no mostrar scrollbar, pero sigue funcionando el scroll si falta */
-  scrollbar-width: none; /* Firefox */
 }
-.admin-table-wrapper::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
 
-/* Si bootstrap mete padding/margen raro */
+/* PC default: sin scroll horizontal (quita flechas y que no se mueva) */
+@media (min-width: 1025px){
+  .admin-table-wrapper{
+    overflow-x: hidden !important;
+    scrollbar-width: none; /* Firefox */
+  }
+  .admin-table-wrapper::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
+}
+
+/* Tablet/Móvil: permitir scroll */
+@media (max-width: 1024px){
+  .admin-table-wrapper{
+    overflow-x: auto !important;
+    scrollbar-width: auto;
+  }
+  .admin-table-wrapper::-webkit-scrollbar{
+    display: block;
+    height: 10px;
+  }
+}
+
+/* Si Bootstrap mete padding/margen raro en table-responsive */
 .table-responsive{
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
 
 /* ======================================================
-   ✅ ESCALADO (quiere verse como 80% en PC aun con zoom 100%)
-   - PC: default 0.80 (tu “look” de 80%)
-   - En tablet: baja menos
-   - En móvil: sin escala (scroll normal)
+   ✅ ESCALADO
+   Queremos que en PC se vea como 80% aunque el navegador esté en 100%
+   - Usamos zoom (no deja hueco abajo)
+   - Fallback con transform para navegadores sin zoom
    ====================================================== */
 .admin-table-scale{
-  --admin-scale: .80;                 /* ✅ PC: se ve “como 80%” */
-  transform: scale(var(--admin-scale));
-  transform-origin: top left;
-  width: calc(100% / var(--admin-scale)); /* ✅ compensa el scale */
+  --admin-scale: .80; /* ✅ look “80%” en PC */
 }
 
-/* Afinado por tamaños (PC/laptop) */
-@media (min-width: 1600px){ .admin-table-scale{ --admin-scale: .85; } } /* pantallas grandes */
-@media (max-width: 1400px){ .admin-table-scale{ --admin-scale: .82; } } /* laptops normales */
-@media (max-width: 1280px){ .admin-table-scale{ --admin-scale: .80; } } /* laptops chicas */
+/* ✅ CHROME/EDGE (y la mayoría): zoom escala layout real (sin huecos) */
+@supports (zoom: 1){
+  .admin-table-scale{
+    zoom: var(--admin-scale);
+  }
+}
 
-/* Tablet: un poco menos de scale (para no mini) */
+/* ✅ Fallback (Firefox): transform */
+@supports not (zoom: 1){
+  .admin-table-scale{
+    transform: scale(var(--admin-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--admin-scale));
+  }
+}
+
+/* Ajustes de escala por tamaños (PC/laptop) */
+@media (min-width: 1600px){ .admin-table-scale{ --admin-scale: .85; } }
+@media (max-width: 1400px){ .admin-table-scale{ --admin-scale: .82; } }
+@media (max-width: 1280px){ .admin-table-scale{ --admin-scale: .80; } }
+
+/* Tablet: menos reducción para que no se vea mini */
 @media (max-width: 1024px){ .admin-table-scale{ --admin-scale: .90; } }
 
-/* Móvil: NO escales, usa scroll normal (flechas/scroll visible si aplica) */
+/* Móvil: sin escala (scroll normal) */
 @media (max-width: 768px){
   .admin-table-scale{
-    transform: none;
-    width: 100%;
+    --admin-scale: 1;
   }
 
-  /* En móvil sí mostramos la scrollbar (flechas/indicador) */
+  /* En móvil mostramos scrollbar */
   .admin-table-wrapper{
+    overflow-x: auto !important;
     scrollbar-width: auto !important;
   }
   .admin-table-wrapper::-webkit-scrollbar{
@@ -78,9 +105,7 @@
   border-collapse: separate !important;
   border-spacing: 0 !important;
   font-size: .84rem;
-
-  /* ✅ sin margen abajo */
-  margin-bottom: 0 !important;
+  margin-bottom: 0 !important; /* ✅ sin margen abajo */
 }
 
 .admin-table td,
@@ -95,15 +120,13 @@
 }
 
 /* =========================
-   Column widths (CLAVE)
+   Column widths
    ========================= */
 .col-folio   { width: 52px;  min-width: 52px;  max-width: 52px;  text-align:center; font-weight:600; }
 .col-cliente { width: 102px; min-width: 92px;  max-width: 112px; }
 .col-tel     { width: 92px;  min-width: 92px;  max-width: 92px; }
 
-.admin-col-desc{
-  width: 80px;  min-width: 80px; max-width: 100px;
-}
+.admin-col-desc{ width: 80px;  min-width: 80px;  max-width: 100px; }
 
 .col-sucursal{ width: 48px;  min-width: 48px;  max-width: 48px;  text-align:center; }
 .col-factura { width: 58px;  min-width: 58px;  max-width: 58px;  text-align:center; }
@@ -124,7 +147,7 @@
 .col-estado  { width: 92px;  min-width: 92px;  max-width: 92px;  text-align:center; }
 
 /* Acciones */
-.col-acciones{ width: 150px; min-width: 150px; max-width: 160px; }
+.col-acciones{ width: 120px; min-width: 120px; max-width: 120px; overflow: visible !important; }
 
 /* =========================
    No-wrap donde debe
@@ -137,7 +160,7 @@
 }
 
 /* =========================
-   Recorte con "..." SOLO en columnas de texto
+   Recorte con "..." SOLO texto
    ========================= */
 .col-cliente,
 .col-tel,
@@ -204,7 +227,7 @@
 }
 
 /* =========================
-   Observaciones (Ver más)
+   Observaciones (Ver más) clickeable
    ========================= */
 .col-obs{ overflow: hidden !important; }
 .obs-wrap{
@@ -222,31 +245,8 @@
 }
 
 /* =========================
-   Acciones: compacto
+   Acciones: compacto (select arriba / botón abajo)
    ========================= */
-.col-acciones{
-  width: 120px !important;
-  min-width: 120px !important;
-  max-width: 120px !important;
-  overflow: visible !important;
-}
-.col-acciones form{
-  display: inline-flex !important;
-  flex-wrap: nowrap !important;
-  gap: .22rem !important;
-}
-.col-acciones .btn{
-  padding: .22rem .42rem !important;
-  font-size: .78rem !important;
-  line-height: 1.1 !important;
-}
-.col-acciones .form-select{
-  padding: .20rem 1.35rem .20rem .42rem !important;
-  font-size: .78rem !important;
-  line-height: 1.1 !important;
-}
-
-/* Acciones en columna (select arriba / botón abajo) */
 .admin-actions-form{
   display: flex !important;
   flex-direction: column !important;
@@ -257,6 +257,16 @@
 .admin-actions-form .form-select,
 .admin-actions-form .btn{
   width: 100% !important;
+}
+.admin-actions-form .form-select{
+  padding: .20rem 1.35rem .20rem .42rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
+}
+.admin-actions-form .btn{
+  padding: .22rem .42rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
 }
 
 /* =========================
@@ -309,18 +319,15 @@
 }
 
 /* ======================================================
-   ✅ FIX: QUITAR ESPACIO EN LA PAGINACIÓN INFERIOR
+   ✅ FIX: PAGINACIÓN inferior (quita huecos)
    ====================================================== */
 .pagination,
 .pagination-sm{
   margin-top: .35rem !important;
   margin-bottom: .35rem !important;
 }
-
 .page-item,
-.page-link{
-  margin-bottom: 0 !important;
-}
+.page-link{ margin-bottom: 0 !important; }
 
 /* reduce mt/mb enormes que metan hueco */
 .mt-4, .mt-5, .my-4, .my-5{ margin-top: .5rem !important; }
