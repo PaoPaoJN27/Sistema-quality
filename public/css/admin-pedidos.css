@@ -195,6 +195,9 @@
    Acciones: nunca recortar + compactar interior
    ========================= */
 .col-acciones{
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
   overflow: visible !important;  /* ✅ clave para que NO se corte */
 }
 .col-acciones form{
@@ -212,6 +215,44 @@
   font-size: .78rem !important;
   line-height: 1.1 !important;
 }
+/* ======================================================
+   ✅ PATCH: ACCIONES EN COLUMNA (select arriba / botón abajo)
+   - NO cambia tu layout general
+   - Solo evita que se corte "Actualizar"
+   ====================================================== */
+
+.col-acciones{
+  overflow: visible !important; /* por si algún navegador recorta */
+}
+
+/* aplica SOLO si el form tiene esta clase */
+.admin-actions-form{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: .30rem !important;
+  width: 100% !important;
+}
+
+/* que el select y botón ocupen toda la celda */
+.admin-actions-form .form-select,
+.admin-actions-form .btn{
+  width: 100% !important;
+}
+
+/* compactitos y estables */
+.admin-actions-form .form-select{
+  padding: .20rem 1.35rem .20rem .42rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
+}
+
+.admin-actions-form .btn{
+  padding: .22rem .42rem !important;
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
+}
+
 
 /* =========================
    Sticky Folio

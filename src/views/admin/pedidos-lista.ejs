@@ -333,7 +333,7 @@
                 </td>
 
                 <td class="text-end text-nowrap col-acciones">
-                  <form action="/admin/<%= p.id %>/estado" method="POST" class="d-inline-flex gap-2 align-items-center">
+                  <form action="/admin/<%= p.id %>/estado" method="POST" class="admin-actions-form">
                     <select name="nuevoEstado" class="form-select form-select-sm w-auto">
                       <option value="No iniciado"  <%= estado === 'No iniciado'  ? 'selected' : '' %>>No iniciado</option>
                       <option value="En proceso" <%= estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
