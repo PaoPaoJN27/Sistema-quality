@@ -117,6 +117,8 @@
 /* Headers: siempre 1 línea */
 .admin-table thead th{
   white-space: nowrap !important;
+  font-size: .85rem;              /* 👈 solo baja encabezados */
+  letter-spacing: -0.2px;         /* ayuda a que quepa */
 }
 
 /* =========================
