@@ -199,7 +199,12 @@
                   <span class="cell-collapse"><%= p.nombre_cliente || '-' %></span>
                 </td>
 
-                <td class="col-tel text-nowrap"><%= p.telefono_cliente || '-' %></td>
+                <td class="col-tel">
+                  <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                    <%= p.telefono_cliente || '-' %>
+                  </div>
+                </td>
+
 
                 <td class="admin-col-desc">
                   <%

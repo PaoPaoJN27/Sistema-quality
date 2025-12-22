@@ -165,7 +165,6 @@
    Recorte con "..." SOLO texto
    ========================= */
 .col-cliente,
-.col-tel,
 .admin-col-desc,
 .col-obs,
 .col-carpeta,
@@ -174,6 +173,27 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+/* Para que la expansión no se corte */
+.admin-table td.col-tel{
+  overflow: visible !important;
+}
+
+/* Teléfono: 1 línea con … y se expande al click */
+.col-tel .cell-collapse{
+  display:block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: initial !important;
+}
+.col-tel .cell-collapse.is-open{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+}
+
 
 /* =========================
    Cell collapse (click para expandir)

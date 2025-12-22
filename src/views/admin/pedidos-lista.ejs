@@ -204,7 +204,12 @@
                   </div>
                 </td>
 
-                <td class="text-nowrap col-tel"><%= p.telefono_cliente || '-' %></td>
+                <td class="col-tel">
+                  <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                    <%= p.telefono_cliente || '-' %>
+                  </div>
+                </td>
+
 
                 <!-- ✅ Descripción colapsable con click -->
                 <td class="admin-col-desc">
