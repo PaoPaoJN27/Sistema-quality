@@ -362,16 +362,43 @@
   const navs = document.querySelectorAll('.table-nav');
   if (!scaleBox || !navs.length) return;
 
+  function getScaleX(el) {
+    const tr = getComputedStyle(el).transform;
+    if (!tr || tr === 'none') return 1;
+
+    // matrix(a, b, c, d, tx, ty)  -> a = scaleX
+    const m = tr.match(/^matrix\((.+)\)$/);
+    if (m) return parseFloat(m[1].split(',')[0]) || 1;
+
+    // matrix3d(...) -> [0] = scaleX
+    const m3 = tr.match(/^matrix3d\((.+)\)$/);
+    if (m3) return parseFloat(m3[1].split(',')[0]) || 1;
+
+    return 1;
+  }
+
   function hasRealOverflow() {
-    const wrapperWidth = wrapper.clientWidth;
-    const scaledWidth = scaleBox.getBoundingClientRect().width;
-    return scaledWidth > wrapperWidth + 2;
+    const scale = getScaleX(scaleBox);
+
+    // scrollWidth NO se escala, pero visualmente sí → multiplicamos por scale
+    const effectiveContentWidth = scaleBox.scrollWidth * scale;
+    const visibleWidth = wrapper.clientWidth;
+
+    return effectiveContentWidth > visibleWidth + 2;
   }
 
   function updateNavs() {
     const show = hasRealOverflow();
     navs.forEach(nav => {
       nav.style.display = show ? 'flex' : 'none';
+
+      // si quieres deshabilitar botones en extremos:
+      const btnL = nav.querySelector('[data-scroll="left"]');
+      const btnR = nav.querySelector('[data-scroll="right"]');
+      if (btnL && btnR && show) {
+        btnL.disabled = wrapper.scrollLeft <= 0;
+        btnR.disabled = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
+      }
     });
   }
 
@@ -390,7 +417,6 @@
     });
   });
 
-  // Eventos que afectan el layout
   window.addEventListener('resize', updateNavs);
   wrapper.addEventListener('scroll', updateNavs);
 
@@ -398,11 +424,11 @@
     new ResizeObserver(updateNavs).observe(scaleBox);
   }
 
-  // Inicial (y doble check por fuentes/scale)
   updateNavs();
   setTimeout(updateNavs, 150);
   setTimeout(updateNavs, 600);
 })();
 </script>
+
 
 <%- include('../partials/footer') %>
