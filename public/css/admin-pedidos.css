@@ -1,38 +1,72 @@
 /* public/css/admin-pedidos.css */
 
 /* ==== Panel admin ancho ==== */
-.admin-container { 
-  max-width: 100%; 
-  margin: 0 auto; 
+.admin-container {
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* ======================================================
-   ✅ TABLA SCROLL SOLO CUANDO SE NECESITE
-   - SIN transform:scale() (porque eso crea huecos gigantes)
+   ✅ WRAPPER (scroll SOLO cuando sea necesario)
+   - En PC: sin barra visible (pero SI hay scroll si hace falta)
+   - En móvil/tablet: que sí aparezca/funcione el scroll (flechas)
+   - Quita el espacio feo abajo
    ====================================================== */
 .admin-table-wrapper{
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
 
-  /* ✅ FIX: evita márgenes/padding que empujen la paginación */
+  /* 🔥 evita el hueco gigante abajo */
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+
+  /* PC: no mostrar scrollbar, pero sigue funcionando el scroll si falta */
+  scrollbar-width: none; /* Firefox */
+}
+.admin-table-wrapper::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
+
+/* Si bootstrap mete padding/margen raro */
+.table-responsive{
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
-.admin-table-wrapper::-webkit-scrollbar{ display:none; }
 
-/* Si bootstrap mete margin/padding raro en table-responsive */
-.admin-container .table-responsive{
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-/* 🚫 IMPORTANTÍSIMO:
-   Desactivamos el scale para evitar el espacio vacío abajo.
-   Deja este wrapper pero sin transform. */
+/* ======================================================
+   ✅ ESCALADO (quiere verse como 80% en PC aun con zoom 100%)
+   - PC: default 0.80 (tu “look” de 80%)
+   - En tablet: baja menos
+   - En móvil: sin escala (scroll normal)
+   ====================================================== */
 .admin-table-scale{
-  transform: none !important;
-  width: 100% !important;
+  --admin-scale: .80;                 /* ✅ PC: se ve “como 80%” */
+  transform: scale(var(--admin-scale));
+  transform-origin: top left;
+  width: calc(100% / var(--admin-scale)); /* ✅ compensa el scale */
+}
+
+/* Afinado por tamaños (PC/laptop) */
+@media (min-width: 1600px){ .admin-table-scale{ --admin-scale: .85; } } /* pantallas grandes */
+@media (max-width: 1400px){ .admin-table-scale{ --admin-scale: .82; } } /* laptops normales */
+@media (max-width: 1280px){ .admin-table-scale{ --admin-scale: .80; } } /* laptops chicas */
+
+/* Tablet: un poco menos de scale (para no mini) */
+@media (max-width: 1024px){ .admin-table-scale{ --admin-scale: .90; } }
+
+/* Móvil: NO escales, usa scroll normal (flechas/scroll visible si aplica) */
+@media (max-width: 768px){
+  .admin-table-scale{
+    transform: none;
+    width: 100%;
+  }
+
+  /* En móvil sí mostramos la scrollbar (flechas/indicador) */
+  .admin-table-wrapper{
+    scrollbar-width: auto !important;
+  }
+  .admin-table-wrapper::-webkit-scrollbar{
+    display: block !important;
+    height: 10px;
+  }
 }
 
 /* =========================
@@ -40,12 +74,12 @@
    ========================= */
 .admin-table{
   width: 100%;
-  table-layout: fixed;                 /* ✅ clave */
+  table-layout: fixed;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   font-size: .84rem;
 
-  /* ✅ FIX: la tabla no debe dejar margen abajo */
+  /* ✅ sin margen abajo */
   margin-bottom: 0 !important;
 }
 
@@ -89,7 +123,7 @@
 
 .col-estado  { width: 92px;  min-width: 92px;  max-width: 92px;  text-align:center; }
 
-/* ✅ Acciones */
+/* Acciones */
 .col-acciones{ width: 150px; min-width: 150px; max-width: 160px; }
 
 /* =========================
@@ -172,9 +206,7 @@
 /* =========================
    Observaciones (Ver más)
    ========================= */
-.col-obs{
-  overflow: hidden !important;
-}
+.col-obs{ overflow: hidden !important; }
 .obs-wrap{
   white-space: normal;
   word-break: break-word;
@@ -190,7 +222,7 @@
 }
 
 /* =========================
-   Acciones: compactar interior
+   Acciones: compacto
    ========================= */
 .col-acciones{
   width: 120px !important;
@@ -214,7 +246,7 @@
   line-height: 1.1 !important;
 }
 
-/* ✅ (si usas select arriba / botón abajo) */
+/* Acciones en columna (select arriba / botón abajo) */
 .admin-actions-form{
   display: flex !important;
   flex-direction: column !important;
@@ -228,7 +260,7 @@
 }
 
 /* =========================
-   Sticky Folio (apagado por defecto)
+   Sticky Folio (apagado default)
    ========================= */
 .admin-table th.sticky-folio,
 .admin-table td.sticky-folio{
@@ -245,9 +277,7 @@
 .admin-table.table-striped > tbody > tr:nth-of-type(odd)  > td.sticky-folio{ background:#f2f2f2 !important; }
 .admin-table.table-striped > tbody > tr:nth-of-type(even) > td.sticky-folio{ background:#fff !important; }
 
-/* =========================
-   Folio STICKY solo en pantallas chicas
-   ========================= */
+/* Sticky folio SOLO en pantallas chicas */
 @media (max-width: 1024px){
   .admin-table th.sticky-folio,
   .admin-table td.sticky-folio{
@@ -264,7 +294,7 @@
 }
 
 /* =========================
-   Mobile (solo compactar)
+   Mobile ajustes extra
    ========================= */
 @media (max-width: 768px){
   .admin-container{ padding-left:12px !important; padding-right:12px !important; }
@@ -279,14 +309,19 @@
 }
 
 /* ======================================================
-   ✅ FIX: QUITAR HUECO EN PAGINACIÓN INFERIOR (SCOPED)
+   ✅ FIX: QUITAR ESPACIO EN LA PAGINACIÓN INFERIOR
    ====================================================== */
-.admin-container .pagination,
-.admin-container .pagination-sm{
-  margin-top: .25rem !important;
-  margin-bottom: .25rem !important;
+.pagination,
+.pagination-sm{
+  margin-top: .35rem !important;
+  margin-bottom: .35rem !important;
 }
-.admin-container .page-item,
-.admin-container .page-link{
+
+.page-item,
+.page-link{
   margin-bottom: 0 !important;
 }
+
+/* reduce mt/mb enormes que metan hueco */
+.mt-4, .mt-5, .my-4, .my-5{ margin-top: .5rem !important; }
+.mb-4, .mb-5, .my-4, .my-5{ margin-bottom: .5rem !important; }
