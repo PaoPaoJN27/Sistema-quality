@@ -157,147 +157,145 @@
       </div>
     </div>
 
-    <!-- CONTROLES (flechas) - solo se muestran si hay overflow -->
-<div id="historialScrollControls" class="historial-scroll-controls">
-  <button type="button" class="btn btn-outline-secondary btn-sm" data-dir="left">«</button>
-  <button type="button" class="btn btn-outline-secondary btn-sm" data-dir="right">»</button>
-</div>
+    <!-- BOTONES SCROLL arriba (✅ solo si hay overflow; lo controla JS) -->
+    <div class="table-nav" data-table-nav="historial-top">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
+    </div>
 
-<!-- TABLA -->
-<div id="historialTableWrapper" class="table-responsive admin-table-wrapper">
-  <div class="admin-table-scale">
-    <table class="table table-striped table-hover align-middle admin-table historial-table">
-      <thead class="table-light">
-        <tr>
-          <th class="col-folio text-nowrap">Folio</th>
-          <th class="col-cliente text-nowrap">Cliente</th>
-          <th class="col-tel text-nowrap">Teléfono</th>
-          <th class="admin-col-desc">Descripción</th>
-          <th class="col-sucursal text-nowrap">Sucursal</th>
+    <!-- TABLA -->
+    <div id="historialTableWrapper" class="table-responsive admin-table-wrapper">
+      <div class="admin-table-scale">
+        <table class="table table-striped table-hover align-middle admin-table historial-table">
+          <thead class="table-light">
+            <tr>
+              <th class="col-folio text-nowrap">Folio</th>
+              <th class="col-cliente text-nowrap">Cliente</th>
+              <th class="col-tel text-nowrap">Teléfono</th>
+              <th class="admin-col-desc">Descripción</th>
+              <th class="col-sucursal text-nowrap">Sucursal</th>
 
-          <th class="col-factura text-nowrap">Factura</th>
-          <th class="col-money text-nowrap">Total</th>
-          <th class="col-money text-nowrap">Anticipo</th>
-          <th class="col-money text-nowrap">Resto</th>
-          <th class="col-enc text-nowrap">Encargado</th>
+              <th class="col-factura text-nowrap">Factura</th>
+              <th class="col-money text-nowrap">Total</th>
+              <th class="col-money text-nowrap">Anticipo</th>
+              <th class="col-money text-nowrap">Resto</th>
+              <th class="col-enc text-nowrap">Encargado</th>
 
-          <th class="col-date text-nowrap">Fecha pedido</th>
-          <th class="col-date text-nowrap">Fecha entrega</th>
+              <th class="col-date text-nowrap">Fecha pedido</th>
+              <th class="col-date text-nowrap">Fecha entrega</th>
 
-          <th class="col-yn text-nowrap">Impreso</th>
-          <th class="col-yn text-nowrap">Entregado</th>
+              <th class="col-yn text-nowrap">Impreso</th>
+              <th class="col-yn text-nowrap">Entregado</th>
 
-          <th class="col-obs text-nowrap">Obs</th>
-          <th class="col-carpeta text-nowrap">Carpeta</th>
-          <th class="col-archivo text-nowrap">Archivo</th>
-          <th class="col-pc text-nowrap">PC</th>
+              <th class="col-obs text-nowrap">Obs</th>
+              <th class="col-carpeta text-nowrap">Carpeta</th>
+              <th class="col-archivo text-nowrap">Archivo</th>
+              <th class="col-pc text-nowrap">PC</th>
 
-          <th class="col-estado text-nowrap">Estado</th>
-        </tr>
-      </thead>
+              <th class="col-estado text-nowrap">Estado</th>
+            </tr>
+          </thead>
 
-      <tbody>
-        <% pedidos.forEach(p => { %>
-          <tr>
-            <td class="col-folio text-nowrap"><%= p.folio_num || '-' %></td>
+          <tbody>
+            <% pedidos.forEach(p => { %>
+              <tr>
+                <td class="col-folio text-nowrap"><%= p.folio_num || '-' %></td>
 
-            <td class="col-cliente">
-              <span class="cell-collapse"><%= p.nombre_cliente || '-' %></span>
-            </td>
+                <td class="col-cliente">
+                  <span class="cell-collapse"><%= p.nombre_cliente || '-' %></span>
+                </td>
 
-            <td class="col-tel text-nowrap"><%= p.telefono_cliente || '-' %></td>
+                <td class="col-tel text-nowrap"><%= p.telefono_cliente || '-' %></td>
 
-            <td class="admin-col-desc">
-              <%
-                let items = [];
-                try {
-                  if (Array.isArray(p.items_json)) items = p.items_json;
-                  else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
-                } catch (e) { items = []; }
+                <td class="admin-col-desc">
+                  <%
+                    let items = [];
+                    try {
+                      if (Array.isArray(p.items_json)) items = p.items_json;
+                      else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
+                    } catch (e) { items = []; }
 
-                const validItems = (items || []).filter(i =>
-                  i &&
-                  Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
-                  String(i.descripcion || '').trim() !== '' &&
-                  Number.isFinite(Number(i.total)) && Number(i.total) >= 0
-                );
+                    const validItems = (items || []).filter(i =>
+                      i &&
+                      Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
+                      String(i.descripcion || '').trim() !== '' &&
+                      Number.isFinite(Number(i.total)) && Number(i.total) >= 0
+                    );
 
-                const itemsTextHtml = validItems
-                  .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
-                  .join('<br>');
-              %>
+                    const itemsTextHtml = validItems
+                      .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
+                      .join('<br>');
+                  %>
 
-              <% if (validItems.length > 0) { %>
-                <span class="cell-collapse"><%- itemsTextHtml %></span>
-              <% } else if (p.descripcion_pedido) { %>
-                <span class="cell-collapse"><%= p.descripcion_pedido %></span>
-              <% } else { %>
-                <span class="cell-collapse">-</span>
-              <% } %>
-            </td>
+                  <% if (validItems.length > 0) { %>
+                    <span class="cell-collapse"><%- itemsTextHtml %></span>
+                  <% } else if (p.descripcion_pedido) { %>
+                    <span class="cell-collapse"><%= p.descripcion_pedido %></span>
+                  <% } else { %>
+                    <span class="cell-collapse">-</span>
+                  <% } %>
+                </td>
 
-            <td class="col-sucursal text-nowrap"><%= p.sucursal || '-' %></td>
-            <td class="col-factura text-nowrap"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
+                <td class="col-sucursal text-nowrap"><%= p.sucursal || '-' %></td>
+                <td class="col-factura text-nowrap"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
 
-            <td class="col-money text-nowrap"><%= formatCurrency(p.total) %></td>
+                <td class="col-money text-nowrap"><%= formatCurrency(p.total) %></td>
 
-            <td class="col-money text-nowrap">
-              <%= (p.anticipo !== null && p.anticipo !== undefined && Number(p.anticipo) !== 0)
-                ? formatCurrency(p.anticipo)
-                : '$0.00' %>
-            </td>
+                <td class="col-money text-nowrap">
+                  <%= (p.anticipo !== null && p.anticipo !== undefined && Number(p.anticipo) !== 0)
+                    ? formatCurrency(p.anticipo)
+                    : '$0.00' %>
+                </td>
 
-            <td class="col-money text-nowrap">
-              <%= (p.resto !== null && p.resto !== undefined && Number(p.resto) !== 0)
-                ? formatCurrency(p.resto)
-                : '-' %>
-            </td>
+                <td class="col-money text-nowrap">
+                  <%= (p.resto !== null && p.resto !== undefined && Number(p.resto) !== 0)
+                    ? formatCurrency(p.resto)
+                    : '-' %>
+                </td>
 
-            <td class="col-enc text-nowrap"><%= p.encargado || '-' %></td>
-            <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_pedido) %></td>
-            <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_entrega) %></td>
+                <td class="col-enc text-nowrap"><%= p.encargado || '-' %></td>
+                <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_pedido) %></td>
+                <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_entrega) %></td>
 
-            <td class="col-yn text-nowrap">
-              <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
-                <%= p.trabajo_impreso ? 'Sí' : 'No' %>
-              </span>
-            </td>
+                <td class="col-yn text-nowrap">
+                  <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
+                    <%= p.trabajo_impreso ? 'Sí' : 'No' %>
+                  </span>
+                </td>
 
-            <td class="col-yn text-nowrap">
-              <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
-                <%= p.trabajo_entregado ? 'Sí' : 'No' %>
-              </span>
-            </td>
+                <td class="col-yn text-nowrap">
+                  <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
+                    <%= p.trabajo_entregado ? 'Sí' : 'No' %>
+                  </span>
+                </td>
 
-            <td class="col-obs">
-              <span class="cell-collapse"><%= p.observaciones || '-' %></span>
-            </td>
+                <td class="col-obs">
+                  <span class="cell-collapse"><%= p.observaciones || '-' %></span>
+                </td>
 
-            <td class="col-carpeta">
-              <span class="cell-collapse"><%= p.archivo_carpeta || '-' %></span>
-            </td>
+                <td class="col-carpeta">
+                  <span class="cell-collapse"><%= p.archivo_carpeta || '-' %></span>
+                </td>
 
-            <td class="col-archivo">
-              <span class="cell-collapse"><%= p.archivo_nombre || '-' %></span>
-            </td>
+                <td class="col-archivo">
+                  <span class="cell-collapse"><%= p.archivo_nombre || '-' %></span>
+                </td>
 
-            <td class="col-pc">
-              <span class="cell-collapse"><%= p.archivo_computadora || '-' %></span>
-            </td>
+                <td class="col-pc">
+                  <span class="cell-collapse"><%= p.archivo_computadora || '-' %></span>
+                </td>
 
-            <td class="col-estado text-nowrap">
-              <span class="badge bg-success">Terminado</span>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</div>
+                <td class="col-estado text-nowrap">
+                  <span class="badge bg-success">Terminado</span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-
-
-    <!-- BOTONES SCROLL abajo -->
+    <!-- BOTONES SCROLL abajo (✅ solo si hay overflow; lo controla JS) -->
     <div class="table-nav" data-table-nav="historial-bottom">
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
@@ -360,7 +358,16 @@
   });
 </script>
 
-<!-- ✅ MISMO JS de scroll izq/der que ya tienes -->
+<!-- ✅ Expandir/colapsar texto (UN SOLO listener) -->
+<script>
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('#historialTableWrapper .cell-collapse');
+    if (!el) return;
+    el.classList.toggle('is-open');
+  });
+</script>
+
+<!-- ✅ Flechas izq/der (.table-nav) - SOLO este sistema -->
 <script>
   (function () {
     const wrapper = document.getElementById('historialTableWrapper');
@@ -369,10 +376,10 @@
     const navs = document.querySelectorAll('.table-nav');
     if (!navs.length) return;
 
-    const STEP = () => Math.max(260, Math.floor(wrapper.clientWidth * 0.75));
+    const STEP = () => Math.max(240, Math.floor(wrapper.clientWidth * 0.65));
 
     function hasOverflowX(el) {
-      return el.scrollWidth > el.clientWidth + 1;
+      return el.scrollWidth > el.clientWidth + 2;
     }
 
     function updateNav(nav) {
@@ -383,8 +390,8 @@
       nav.style.display = overflow ? 'flex' : 'none';
       if (!overflow) return;
 
-      const atStart = wrapper.scrollLeft <= 0;
-      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
+      const atStart = wrapper.scrollLeft <= 1;
+      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth + 1) >= wrapper.scrollWidth;
 
       btnL.disabled = atStart;
       btnR.disabled = atEnd;
@@ -409,63 +416,20 @@
       });
     });
 
-    wrapper.addEventListener('scroll', () => updateAllNavs());
-    window.addEventListener('resize', () => updateAllNavs());
+    wrapper.addEventListener('scroll', updateAllNavs);
+    window.addEventListener('resize', updateAllNavs);
 
     if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(() => updateAllNavs());
+      const ro = new ResizeObserver(updateAllNavs);
       ro.observe(wrapper);
     }
+
+    // ✅ por si el layout tarda (scale/fonts)
+    setTimeout(updateAllNavs, 150);
+    setTimeout(updateAllNavs, 600);
 
     updateAllNavs();
   })();
 </script>
-<script>
-  (function () {
-    const wrapper = document.getElementById('historialTableWrapper');
-    const controls = document.getElementById('historialScrollControls');
-    if (!wrapper || !controls) return;
-
-    // 1) Expandir/colapsar texto (igual que admin)
-    wrapper.addEventListener('click', (e) => {
-      const el = e.target.closest('.cell-collapse');
-      if (!el) return;
-      el.classList.toggle('is-open');
-    });
-
-    // 2) Mostrar/ocultar flechas SOLO si hay overflow real
-    function updateOverflow() {
-      const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth + 2;
-      controls.classList.toggle('is-visible', hasOverflow);
-    }
-
-    // 3) Flechas mueven horizontal
-    controls.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-dir]');
-      if (!btn) return;
-      const dir = btn.getAttribute('data-dir');
-      const step = Math.max(220, Math.floor(wrapper.clientWidth * 0.55));
-      wrapper.scrollBy({ left: dir === 'left' ? -step : step, behavior: 'smooth' });
-    });
-
-    // Inicial + cuando cambia tamaño/zoom
-    updateOverflow();
-    window.addEventListener('resize', updateOverflow);
-
-    // Por si el navegador tarda en calcular widths (fonts/scale)
-    setTimeout(updateOverflow, 150);
-    setTimeout(updateOverflow, 600);
-  })();
-</script>
-
-
-<script>
-  document.addEventListener('click', (e) => {
-    const el = e.target.closest('.cell-collapse');
-    if (!el) return;
-    el.classList.toggle('is-open');
-  });
-</script>
-
 
 <%- include('../partials/footer') %>
