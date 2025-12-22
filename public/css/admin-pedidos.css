@@ -2,8 +2,7 @@
 
 /* ==== Panel admin ancho ==== */
 .admin-container { max-width: 100%; 
- padding-left: 0 !important;
-  padding-right: 0 !important;
+  margin: 0 auto; 
 }
 
 /* ======================================================
