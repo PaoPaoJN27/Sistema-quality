@@ -354,81 +354,55 @@
 
 <!-- ✅ JS UNICO: expandir + flechas SOLO si hay overflow real -->
 <script>
-  (function () {
-    const wrapper = document.getElementById('historialTableWrapper');
-    if (!wrapper) return;
+(function () {
+  const wrapper = document.getElementById('historialTableWrapper');
+  if (!wrapper) return;
 
-    const navs = document.querySelectorAll('.table-nav');
-    if (!navs.length) return;
+  const scaleBox = wrapper.querySelector('.admin-table-scale');
+  const navs = document.querySelectorAll('.table-nav');
+  if (!scaleBox || !navs.length) return;
 
-    const STEP = () => Math.max(240, Math.floor(wrapper.clientWidth * 0.65));
+  function hasRealOverflow() {
+    const wrapperWidth = wrapper.clientWidth;
+    const scaledWidth = scaleBox.getBoundingClientRect().width;
+    return scaledWidth > wrapperWidth + 2;
+  }
 
-    function hasOverflowX() {
-      // ✅ IMPORTANTE: medir el table real (evita falsos positivos por CSS)
-      const table = wrapper.querySelector('table');
-      if (!table) return false;
-      return table.scrollWidth > wrapper.clientWidth + 2;
-    }
-
-    function updateNav(nav) {
-      const btnL = nav.querySelector('[data-scroll="left"]');
-      const btnR = nav.querySelector('[data-scroll="right"]');
-
-      const overflow = hasOverflowX();
-      nav.style.display = overflow ? 'flex' : 'none';
-      if (!overflow) return;
-
-      const atStart = wrapper.scrollLeft <= 1;
-      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= (wrapper.scrollWidth - 1);
-
-      btnL.disabled = atStart;
-      btnR.disabled = atEnd;
-    }
-
-    function updateAllNavs() {
-      navs.forEach(updateNav);
-    }
-
-    // Click para expandir/colapsar texto
-    wrapper.addEventListener('click', (e) => {
-      const el = e.target.closest('.cell-collapse');
-      if (!el) return;
-      el.classList.toggle('is-open');
-
-      // al expandir puede cambiar overflow
-      requestAnimationFrame(updateAllNavs);
-      setTimeout(updateAllNavs, 80);
+  function updateNavs() {
+    const show = hasRealOverflow();
+    navs.forEach(nav => {
+      nav.style.display = show ? 'flex' : 'none';
     });
+  }
 
-    // Flechas scroll
-    navs.forEach((nav) => {
-      nav.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-scroll]');
-        if (!btn) return;
+  navs.forEach(nav => {
+    nav.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-scroll]');
+      if (!btn) return;
 
-        const dir = btn.getAttribute('data-scroll');
-        const amount = STEP();
+      const dir = btn.dataset.scroll;
+      const step = Math.max(260, Math.floor(wrapper.clientWidth * 0.7));
 
-        wrapper.scrollBy({
-          left: dir === 'left' ? -amount : amount,
-          behavior: 'smooth'
-        });
+      wrapper.scrollBy({
+        left: dir === 'left' ? -step : step,
+        behavior: 'smooth'
       });
     });
+  });
 
-    wrapper.addEventListener('scroll', () => updateAllNavs());
-    window.addEventListener('resize', () => updateAllNavs());
+  // Eventos que afectan el layout
+  window.addEventListener('resize', updateNavs);
+  wrapper.addEventListener('scroll', updateNavs);
 
-    if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(() => updateAllNavs());
-      ro.observe(wrapper);
-    }
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(updateNavs).observe(scaleBox);
+  }
 
-    // Fonts/paint tardan: recalcular varias veces
-    updateAllNavs();
-    setTimeout(updateAllNavs, 120);
-    setTimeout(updateAllNavs, 600);
-  })();
+  // Inicial (y doble check por fuentes/scale)
+  updateNavs();
+  setTimeout(updateNavs, 150);
+  setTimeout(updateNavs, 600);
+})();
 </script>
 
 <%- include('../partials/footer') %>
