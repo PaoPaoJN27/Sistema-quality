@@ -74,7 +74,7 @@
 #historialTableWrapper .col-folio   { width: 54px;  min-width: 54px;  max-width: 54px;  text-align:center; font-weight:600; }
 #historialTableWrapper .col-cliente { width: 130px; min-width: 120px; max-width: 140px; }
 #historialTableWrapper .col-tel     { width: 98px;  min-width: 98px;  max-width: 98px;  text-align:center; }
-#historialTableWrapper .admin-col-desc{ width: 180px; min-width: 170px; max-width: 200px; }
+#historialTableWrapper .admin-col-desc{ width: 150px; min-width: 140px; max-width: 160px; }
 #historialTableWrapper .col-sucursal{ width: 74px;  min-width: 74px;  max-width: 82px;  text-align:center; }
 #historialTableWrapper .col-factura { width: 64px;  min-width: 64px;  max-width: 64px;  text-align:center; }
 #historialTableWrapper .col-money   { width: 92px;  min-width: 92px;  max-width: 92px;  text-align:center; }
@@ -168,6 +168,14 @@
     background-color: #f8f9fa !important;
   }
 }
+@media (max-width: 1600px){
+  #historialTableWrapper .admin-col-desc{
+    width: 140px;
+    min-width: 130px;
+    max-width: 150px;
+  }
+}
+
 
 /* ===== Flechas (table-nav) ===== */
 .table-nav{
@@ -175,6 +183,13 @@
   gap: .35rem;
   margin: .25rem 0 .6rem 0;
 }
+
+/* Centrar encabezados de la tabla */
+#historialTableWrapper .historial-table thead th{
+  text-align: center !important;
+  vertical-align: middle;
+}
+
 
 /* Por si quieres que en móvil siempre aparezcan, descomenta:
 @media (max-width: 768px){
