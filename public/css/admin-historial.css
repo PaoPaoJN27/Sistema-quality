@@ -21,7 +21,7 @@
 
 /* ✅ “Zoom” visual SIN romper el overflow */
 #historialTableWrapper .admin-table-scale{
-  --admin-scale: .90 /* más grande, evita que se vea mini */
+  --admin-scale: .90; /* más grande, evita que se vea mini */
   transform: scale(var(--admin-scale));
   transform-origin: top left;
 
