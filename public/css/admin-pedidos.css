@@ -1,7 +1,10 @@
 /* public/css/admin-pedidos.css */
 
 /* ==== Panel admin ancho ==== */
-.admin-container { max-width: 100%; margin: 0 auto; }
+.admin-container { max-width: 100%; 
+ padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 
 /* ======================================================
    ✅ ESCALADO TIPO "ZOOM 67%" (pero controlado)
