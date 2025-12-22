@@ -426,4 +426,13 @@
   })();
 </script>
 
+<script>
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('.cell-collapse');
+    if (!el) return;
+    el.classList.toggle('is-open');
+  });
+</script>
+
+
 <%- include('../partials/footer') %>
