@@ -1,5 +1,5 @@
 /* ======================================================
-   HISTORIAL TERMINADOS - LOOK ADMIN (sin overflow fantasma)
+   HISTORIAL TERMINADOS - LOOK ADMIN (responsive como admin-pedidos)
    ====================================================== */
 
 .admin-container{
@@ -7,26 +7,63 @@
   max-width: none !important;
 }
 
-/* Wrapper */
+/* ======================================================
+   ✅ WRAPPER
+   - PC: NO scroll horizontal (como admin-pedidos)
+   - Tablet/Móvil: SÍ scroll si hace falta
+   ====================================================== */
 #historialTableWrapper.admin-table-wrapper{
-  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
-  scrollbar-width: none;
-}
-#historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{
-  display:none;
 }
 
-/* ✅ “Zoom” visual SIN romper el overflow */
+/* PC default: sin scroll horizontal */
+@media (min-width: 1025px){
+  #historialTableWrapper.admin-table-wrapper{
+    overflow-x: hidden !important;
+    scrollbar-width: none; /* Firefox */
+  }
+  #historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{
+    display:none; /* Chrome/Safari */
+  }
+}
+
+/* Tablet/Móvil: permitir scroll */
+@media (max-width: 1024px){
+  #historialTableWrapper.admin-table-wrapper{
+    overflow-x: auto !important;
+    scrollbar-width: auto;
+  }
+  #historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{
+    display:block;
+    height: 10px;
+  }
+}
+
+/* ======================================================
+   ✅ ESCALADO (CLAVE para que sí "se adapte" al zoom del navegador)
+   - Chrome/Edge: zoom (recalcula layout real)
+   - Firefox: transform + width calc (para que no se "congele")
+   ====================================================== */
 #historialTableWrapper .admin-table-scale{
   --admin-scale: .88; /* más grande, evita que se vea mini */
-  transform: scale(var(--admin-scale));
-  transform-origin: top left;
+}
 
-  /* CLAVE: NO tocar el layout width (si no, overflow fantasma) */
-  width: 100%;
+/* ✅ CHROME/EDGE */
+@supports (zoom: 1){
+  #historialTableWrapper .admin-table-scale{
+    zoom: var(--admin-scale);
+  }
+}
+
+/* ✅ FIREFOX fallback */
+@supports not (zoom: 1){
+  #historialTableWrapper .admin-table-scale{
+    transform: scale(var(--admin-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--admin-scale)); /* 🔥 CLAVE para no "congelarse" */
+  }
 }
 
 /* Ajustes suaves por tamaño */
@@ -35,13 +72,18 @@
 @media (max-width: 1280px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .88; } }
 @media (max-width: 1150px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .86; } }
 
-/* Tablet/Móvil: sin scale para mejor UX */
+/* Tablet: menos reducción */
+@media (max-width: 1024px){
+  #historialTableWrapper .admin-table-scale{ --admin-scale: .95; }
+}
+
+/* Móvil: sin escala (scroll normal) */
 @media (max-width: 768px){
-  #historialTableWrapper .admin-table-scale{
-    transform: none;
-    width: 100%;
-  }
+  #historialTableWrapper .admin-table-scale{ --admin-scale: 1; }
+
+  /* En móvil mostramos scrollbar */
   #historialTableWrapper.admin-table-wrapper{
+    overflow-x: auto !important;
     scrollbar-width: auto !important;
   }
   #historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{
@@ -50,7 +92,9 @@
   }
 }
 
-/* Tabla */
+/* ======================================================
+   TABLA
+   ====================================================== */
 #historialTableWrapper .historial-table{
   width: 100%;
   table-layout: fixed; /* ✅ columnas JUSTAS */
@@ -68,6 +112,8 @@
 
 #historialTableWrapper .historial-table thead th{
   white-space: nowrap !important;
+  text-align: center !important;
+  vertical-align: middle;
 }
 
 /* ====== Column widths (justas) ====== */
@@ -168,6 +214,8 @@
     background-color: #f8f9fa !important;
   }
 }
+
+/* Ajuste extra que ya tenías */
 @media (max-width: 1600px){
   #historialTableWrapper .admin-col-desc{
     width: 140px;
@@ -176,20 +224,12 @@
   }
 }
 
-
 /* ===== Flechas (table-nav) ===== */
 .table-nav{
   display: none;            /* ✅ JS las prende si hay overflow */
   gap: .35rem;
   margin: .25rem 0 .6rem 0;
 }
-
-/* Centrar encabezados de la tabla */
-#historialTableWrapper .historial-table thead th{
-  text-align: center !important;
-  vertical-align: middle;
-}
-
 
 /* Por si quieres que en móvil siempre aparezcan, descomenta:
 @media (max-width: 768px){
