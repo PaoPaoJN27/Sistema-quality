@@ -68,7 +68,7 @@
 .col-tel     { width: 92px;  min-width: 92px;  max-width: 92px; }    /* ✅ más angosto */
 
 .admin-col-desc{
-  width: 100px;  min-width: 100px; max-width: 120px;               /* ✅ más angosto */
+  width: 80px;  min-width: 80px; max-width: 100px;               /* ✅ más angosto */
 }
 
 .col-sucursal{ width: 48px;  min-width: 48px;  max-width: 48px;  text-align:center; }
