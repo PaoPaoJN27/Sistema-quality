@@ -48,12 +48,6 @@
         minimumFractionDigits: 2
       });
     }
-
-    function shortText(v, n) {
-      if (!v) return '-';
-      const s = String(v);
-      return s.length > n ? (s.slice(0, n) + '…') : s;
-    }
   %>
 
   <!-- FILTROS -->
@@ -157,7 +151,7 @@
       </div>
     </div>
 
-    <!-- BOTONES SCROLL arriba (✅ solo si hay overflow; lo controla JS) -->
+    <!-- ✅ Flechas arriba (solo si hay overflow REAL) -->
     <div class="table-nav" data-table-nav="historial-top">
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
@@ -295,7 +289,7 @@
       </div>
     </div>
 
-    <!-- BOTONES SCROLL abajo (✅ solo si hay overflow; lo controla JS) -->
+    <!-- ✅ Flechas abajo (solo si hay overflow REAL) -->
     <div class="table-nav" data-table-nav="historial-bottom">
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="left">&laquo;</button>
       <button type="button" class="btn btn-sm btn-outline-secondary" data-scroll="right">&raquo;</button>
@@ -358,16 +352,7 @@
   });
 </script>
 
-<!-- ✅ Expandir/colapsar texto (UN SOLO listener) -->
-<script>
-  document.addEventListener('click', (e) => {
-    const el = e.target.closest('#historialTableWrapper .cell-collapse');
-    if (!el) return;
-    el.classList.toggle('is-open');
-  });
-</script>
-
-<!-- ✅ Flechas izq/der (.table-nav) - SOLO este sistema -->
+<!-- ✅ JS UNICO: expandir + flechas SOLO si hay overflow real -->
 <script>
   (function () {
     const wrapper = document.getElementById('historialTableWrapper');
@@ -378,20 +363,23 @@
 
     const STEP = () => Math.max(240, Math.floor(wrapper.clientWidth * 0.65));
 
-    function hasOverflowX(el) {
-      return el.scrollWidth > el.clientWidth + 2;
+    function hasOverflowX() {
+      // ✅ IMPORTANTE: medir el table real (evita falsos positivos por CSS)
+      const table = wrapper.querySelector('table');
+      if (!table) return false;
+      return table.scrollWidth > wrapper.clientWidth + 2;
     }
 
     function updateNav(nav) {
       const btnL = nav.querySelector('[data-scroll="left"]');
       const btnR = nav.querySelector('[data-scroll="right"]');
 
-      const overflow = hasOverflowX(wrapper);
+      const overflow = hasOverflowX();
       nav.style.display = overflow ? 'flex' : 'none';
       if (!overflow) return;
 
       const atStart = wrapper.scrollLeft <= 1;
-      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth + 1) >= wrapper.scrollWidth;
+      const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= (wrapper.scrollWidth - 1);
 
       btnL.disabled = atStart;
       btnR.disabled = atEnd;
@@ -401,6 +389,18 @@
       navs.forEach(updateNav);
     }
 
+    // Click para expandir/colapsar texto
+    wrapper.addEventListener('click', (e) => {
+      const el = e.target.closest('.cell-collapse');
+      if (!el) return;
+      el.classList.toggle('is-open');
+
+      // al expandir puede cambiar overflow
+      requestAnimationFrame(updateAllNavs);
+      setTimeout(updateAllNavs, 80);
+    });
+
+    // Flechas scroll
     navs.forEach((nav) => {
       nav.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-scroll]');
@@ -416,19 +416,18 @@
       });
     });
 
-    wrapper.addEventListener('scroll', updateAllNavs);
-    window.addEventListener('resize', updateAllNavs);
+    wrapper.addEventListener('scroll', () => updateAllNavs());
+    window.addEventListener('resize', () => updateAllNavs());
 
     if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(updateAllNavs);
+      const ro = new ResizeObserver(() => updateAllNavs());
       ro.observe(wrapper);
     }
 
-    // ✅ por si el layout tarda (scale/fonts)
-    setTimeout(updateAllNavs, 150);
-    setTimeout(updateAllNavs, 600);
-
+    // Fonts/paint tardan: recalcular varias veces
     updateAllNavs();
+    setTimeout(updateAllNavs, 120);
+    setTimeout(updateAllNavs, 600);
   })();
 </script>
 

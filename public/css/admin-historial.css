@@ -1,33 +1,41 @@
 /* ======================================================
-   HISTORIAL TERMINADOS - MISMO LOOK QUE ADMIN
-   (zoom + columnas fijas + sin flechas si no hay overflow)
+   HISTORIAL TERMINADOS - LOOK ADMIN (sin overflow fantasma)
    ====================================================== */
 
-/* Wrapper historial */
+.admin-container{
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Wrapper */
 #historialTableWrapper.admin-table-wrapper{
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
-  scrollbar-width: none; /* Firefox: oculto en PC */
+  scrollbar-width: none;
 }
-#historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{ display:none; }
+#historialTableWrapper.admin-table-wrapper::-webkit-scrollbar{
+  display:none;
+}
 
-/* Escala tipo “80%-90%” pero sin que se corte */
+/* ✅ “Zoom” visual SIN romper el overflow */
 #historialTableWrapper .admin-table-scale{
-  --admin-scale: .90;                  /* ✅ más grande que .80 para que NO se vea mini */
+  --admin-scale: .97; /* más grande, evita que se vea mini */
   transform: scale(var(--admin-scale));
   transform-origin: top left;
-  width: calc(100% / var(--admin-scale));
+
+  /* CLAVE: NO tocar el layout width (si no, overflow fantasma) */
+  width: 100%;
 }
 
-/* Ajustes por tamaños */
-@media (min-width: 1600px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .94; } }
-@media (max-width: 1400px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .92; } }
-@media (max-width: 1280px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .90; } }
-@media (max-width: 1150px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .88; } }
+/* Ajustes suaves por tamaño */
+@media (min-width: 1700px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .98; } }
+@media (max-width: 1400px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .96; } }
+@media (max-width: 1280px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .95; } }
+@media (max-width: 1150px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .94; } }
 
-/* Tablet/Móvil: sin scale (para que sea usable) y que se vea el scroll */
+/* Tablet/Móvil: sin scale para mejor UX */
 @media (max-width: 768px){
   #historialTableWrapper .admin-table-scale{
     transform: none;
@@ -42,19 +50,19 @@
   }
 }
 
-/* Tabla historial: fija y estable */
+/* Tabla */
 #historialTableWrapper .historial-table{
   width: 100%;
-  table-layout: fixed;                 /* ✅ para que NO se estire */
+  table-layout: fixed; /* ✅ columnas JUSTAS */
   border-collapse: separate !important;
   border-spacing: 0 !important;
   margin-bottom: 0 !important;
-  font-size: .84rem;
+  font-size: .90rem;   /* un pelín más grande */
 }
 
 #historialTableWrapper .historial-table td,
 #historialTableWrapper .historial-table th{
-  padding: .38rem .42rem !important;
+  padding: .42rem .46rem !important;
   vertical-align: middle;
 }
 
@@ -63,21 +71,21 @@
 }
 
 /* ====== Column widths (justas) ====== */
-#historialTableWrapper .col-folio   { width: 52px;  min-width: 52px;  max-width: 52px;  text-align:center; font-weight:600; }
-#historialTableWrapper .col-cliente { width: 120px; min-width: 110px; max-width: 130px; }
-#historialTableWrapper .col-tel     { width: 96px;  min-width: 96px;  max-width: 96px;  text-align:center; }
-#historialTableWrapper .admin-col-desc{ width: 160px; min-width: 150px; max-width: 180px; }
-#historialTableWrapper .col-sucursal{ width: 70px;  min-width: 70px;  max-width: 78px;  text-align:center; }
-#historialTableWrapper .col-factura { width: 62px;  min-width: 62px;  max-width: 62px;  text-align:center; }
-#historialTableWrapper .col-money   { width: 86px;  min-width: 86px;  max-width: 86px;  text-align:center; }
-#historialTableWrapper .col-enc     { width: 78px;  min-width: 72px;  max-width: 86px; }
-#historialTableWrapper .col-date    { width: 104px; min-width: 104px; max-width: 104px; text-align:center; }
-#historialTableWrapper .col-yn      { width: 64px;  min-width: 64px;  max-width: 64px;  text-align:center; }
-#historialTableWrapper .col-obs     { width: 150px; min-width: 140px; max-width: 170px; }
-#historialTableWrapper .col-carpeta { width: 90px;  min-width: 82px;  max-width: 96px; }
-#historialTableWrapper .col-archivo { width: 90px;  min-width: 82px;  max-width: 96px; }
-#historialTableWrapper .col-pc      { width: 70px;  min-width: 64px;  max-width: 78px; }
-#historialTableWrapper .col-estado  { width: 98px;  min-width: 98px;  max-width: 98px;  text-align:center; }
+#historialTableWrapper .col-folio   { width: 54px;  min-width: 54px;  max-width: 54px;  text-align:center; font-weight:600; }
+#historialTableWrapper .col-cliente { width: 130px; min-width: 120px; max-width: 140px; }
+#historialTableWrapper .col-tel     { width: 98px;  min-width: 98px;  max-width: 98px;  text-align:center; }
+#historialTableWrapper .admin-col-desc{ width: 180px; min-width: 170px; max-width: 200px; }
+#historialTableWrapper .col-sucursal{ width: 74px;  min-width: 74px;  max-width: 82px;  text-align:center; }
+#historialTableWrapper .col-factura { width: 64px;  min-width: 64px;  max-width: 64px;  text-align:center; }
+#historialTableWrapper .col-money   { width: 92px;  min-width: 92px;  max-width: 92px;  text-align:center; }
+#historialTableWrapper .col-enc     { width: 86px;  min-width: 78px;  max-width: 96px; }
+#historialTableWrapper .col-date    { width: 106px; min-width: 106px; max-width: 106px; text-align:center; }
+#historialTableWrapper .col-yn      { width: 70px;  min-width: 70px;  max-width: 70px;  text-align:center; }
+#historialTableWrapper .col-obs     { width: 170px; min-width: 160px; max-width: 190px; }
+#historialTableWrapper .col-carpeta { width: 100px; min-width: 92px;  max-width: 110px; }
+#historialTableWrapper .col-archivo { width: 100px; min-width: 92px;  max-width: 110px; }
+#historialTableWrapper .col-pc      { width: 84px;  min-width: 78px;  max-width: 92px; }
+#historialTableWrapper .col-estado  { width: 102px; min-width: 102px; max-width: 102px; text-align:center; }
 
 /* No-wrap donde debe */
 #historialTableWrapper .text-nowrap,
@@ -90,7 +98,7 @@
   white-space: nowrap !important;
 }
 
-/* Ellipsis en columnas de texto */
+/* Ellipsis en texto */
 #historialTableWrapper .col-cliente,
 #historialTableWrapper .admin-col-desc,
 #historialTableWrapper .col-obs,
@@ -101,7 +109,7 @@
   text-overflow: ellipsis !important;
 }
 
-/* Click para expandir (igual que admin) */
+/* Click para expandir */
 #historialTableWrapper .cell-collapse{
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -116,7 +124,7 @@
   overflow: visible;
 }
 
-/* Cliente / Carpeta / Archivo / PC: 1 línea por default */
+/* 1 línea por default en columnas cortas */
 #historialTableWrapper .col-cliente .cell-collapse,
 #historialTableWrapper .col-carpeta .cell-collapse,
 #historialTableWrapper .col-archivo .cell-collapse,
@@ -138,7 +146,7 @@
   -webkit-line-clamp: unset !important;
 }
 
-/* Folio NO sticky por default (para que no “estorbe”) */
+/* ✅ Folio NO sticky en desktop */
 #historialTableWrapper .sticky-folio{
   position: static !important;
   left: auto !important;
@@ -161,19 +169,15 @@
   }
 }
 
-/* ===== Flechas (controles) ===== */
-.historial-scroll-controls{
-  display: none; /* ✅ por defecto ocultas */
+/* ===== Flechas (table-nav) ===== */
+.table-nav{
+  display: none;            /* ✅ JS las prende si hay overflow */
   gap: .35rem;
-  margin: .25rem 0 .5rem 0;
-}
-.historial-scroll-controls.is-visible{
-  display: inline-flex; /* ✅ solo si hay overflow real */
+  margin: .25rem 0 .6rem 0;
 }
 
-/* En móvil sí puedes dejarlas siempre visibles si quieres */
+/* Por si quieres que en móvil siempre aparezcan, descomenta:
 @media (max-width: 768px){
-  .historial-scroll-controls{
-    display: inline-flex;
-  }
+  .table-nav{ display:flex; }
 }
+*/
