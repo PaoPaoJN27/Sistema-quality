@@ -100,7 +100,7 @@
   border-spacing: 0 !important;
   margin-bottom: 0 !important;
 
-  font-size: .84rem; /* 👈 si quieres SOLO letras: cambia esto */
+  font-size: .96rem; /* 👈 si quieres SOLO letras: cambia esto */
 }
 
 #historialTableWrapper .historial-table td,
