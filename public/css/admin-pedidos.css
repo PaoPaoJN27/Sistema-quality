@@ -1,7 +1,8 @@
 /* public/css/admin-pedidos.css */
 
 /* ==== Panel admin ancho ==== */
-.admin-container { max-width: 100%; 
+.admin-container { 
+  max-width: 100%; 
   margin: 0 auto; 
 }
 
@@ -14,8 +15,18 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+
+  /* ✅ FIX: quitar espacio extra abajo */
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 .admin-table-wrapper::-webkit-scrollbar{ display:none; }
+
+/* Si bootstrap mete padding/margen raro en table-responsive */
+.table-responsive{
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
 
 /* La magia: escalamos, pero "compensamos" el ancho para que no se recorte */
 .admin-table-scale{
@@ -49,6 +60,9 @@
   border-collapse: separate !important;
   border-spacing: 0 !important;
   font-size: .84rem;
+
+  /* ✅ FIX: la tabla no debe dejar margen abajo */
+  margin-bottom: 0 !important;
 }
 
 .admin-table td,
@@ -217,6 +231,7 @@
   font-size: .78rem !important;
   line-height: 1.1 !important;
 }
+
 /* ======================================================
    ✅ PATCH: ACCIONES EN COLUMNA (select arriba / botón abajo)
    - NO cambia tu layout general
@@ -255,7 +270,6 @@
   line-height: 1.1 !important;
 }
 
-
 /* =========================
    Sticky Folio
    ========================= */
@@ -289,6 +303,7 @@
   .col-obs     { width: 180px; min-width: 160px; max-width: 210px; }
   .col-acciones{ width: 160px; min-width: 160px; max-width: 170px; }
 }
+
 /* =========================
    Folio STICKY solo en pantallas chicas
    ========================= */
@@ -306,4 +321,29 @@
   .admin-table thead th.sticky-folio{
     background-color: #f8f9fa !important;
   }
+}
+
+/* ======================================================
+   ✅ FIX: QUITAR ESPACIO EN LA PAGINACIÓN INFERIOR
+   (cuando eliges 30/50/100 y se ve el hueco gigante)
+   ====================================================== */
+.pagination,
+.pagination-sm{
+  margin-top: .35rem !important;
+  margin-bottom: .35rem !important;
+}
+
+.page-item,
+.page-link{
+  margin-bottom: 0 !important;
+}
+
+/* Si el bloque inferior está dentro de algún row con mt */
+.mt-4, .mt-5, .my-4, .my-5{
+  margin-top: .5rem !important;
+}
+
+/* Si le metiste un "mb" a algún contenedor de tabla/paginación */
+.mb-4, .mb-5, .my-4, .my-5{
+  margin-bottom: .5rem !important;
 }
