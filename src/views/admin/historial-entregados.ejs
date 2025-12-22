@@ -164,129 +164,143 @@
     </div>
 
     <!-- TABLA -->
-    <div id="historialTableWrapper" class="table-responsive admin-table-wrapper">
-      <table class="table table-striped table-hover align-middle admin-table">
-        <thead class="table-light">
+<div id="historialTableWrapper" class="table-responsive admin-table-wrapper">
+  <div class="admin-table-scale">
+    <table class="table table-striped table-hover align-middle admin-table">
+      <thead class="table-light">
+        <tr>
+          <th class="text-nowrap sticky-folio col-folio">Folio</th>
+          <th class="text-nowrap col-cliente">Cliente</th>
+          <th class="text-nowrap col-tel">Teléfono</th>
+          <th class="col-desc">Descripción</th>
+          <th class="text-nowrap col-sucursal">Sucursal</th>
+
+          <th class="text-nowrap col-factura">Factura</th>
+          <th class="text-nowrap col-money">Total</th>
+          <th class="text-nowrap col-money">Anticipo</th>
+          <th class="text-nowrap col-money">Resto</th>
+          <th class="text-nowrap col-enc">Encargado</th>
+
+          <th class="text-nowrap col-date">Fecha pedido</th>
+          <th class="text-nowrap col-date">Fecha entrega</th>
+
+          <th class="text-nowrap col-yn">Impreso</th>
+          <th class="text-nowrap col-yn">Entregado</th>
+
+          <th class="text-nowrap col-obs">Obs</th>
+          <th class="text-nowrap col-carpeta">Carpeta</th>
+          <th class="text-nowrap col-archivo">Archivo</th>
+          <th class="text-nowrap col-pc">PC</th>
+
+          <th class="text-nowrap col-estado">Estado</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% pedidos.forEach(p => { %>
           <tr>
-            <th class="text-nowrap sticky-folio">Folio</th>
-            <th class="text-nowrap">Cliente</th>
-            <th class="text-nowrap">Teléfono</th>
-            <th>Descripción</th>
-            <th class="text-nowrap">Sucursal</th>
+            <td class="text-nowrap sticky-folio col-folio"><%= p.folio_num || '-' %></td>
 
-            <!-- ✅ NUEVOS (como en /admin) -->
-            <th class="text-nowrap">Factura</th>
-            <th class="text-nowrap">Total</th>
-            <th class="text-nowrap">Anticipo</th>
-            <th class="text-nowrap">Resto</th>
-            <th class="text-nowrap">Encargado</th>
+            <td class="col-cliente">
+              <div class="cell-collapse"><%= p.nombre_cliente || '-' %></div>
+            </td>
 
-            <th class="text-nowrap">Fecha pedido</th>
-            <th class="text-nowrap">Fecha entrega</th>
+            <td class="text-nowrap col-tel"><%= p.telefono_cliente || '-' %></td>
 
-            <th class="text-nowrap">Impreso</th>
-            <th class="text-nowrap">Entregado</th>
-            <th class="text-nowrap">Obs</th>
-            <th class="text-nowrap">Carpeta</th>
-            <th class="text-nowrap">Archivo</th>
-            <th class="text-nowrap">PC</th>
+            <td class="col-desc">
+              <%
+                let items = [];
+                try {
+                  if (Array.isArray(p.items_json)) items = p.items_json;
+                  else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
+                } catch (e) { items = []; }
 
-            <th class="text-nowrap">Estado</th>
+                const validItems = (items || []).filter(i =>
+                  i &&
+                  Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
+                  String(i.descripcion || '').trim() !== '' &&
+                  Number.isFinite(Number(i.total)) && Number(i.total) >= 0
+                );
+
+                const itemsTextHtml = validItems
+                  .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
+                  .join('<br>');
+              %>
+
+              <% if (validItems.length > 0) { %>
+                <div class="cell-collapse"><%- itemsTextHtml %></div>
+              <% } else if (p.descripcion_pedido) { %>
+                <div class="cell-collapse" title="<%= p.descripcion_pedido %>">
+                  <%= p.descripcion_pedido %>
+                </div>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+
+            <td class="text-nowrap col-sucursal"><%= p.sucursal || '-' %></td>
+
+            <td class="text-nowrap col-factura"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
+
+            <td class="text-nowrap col-money"><%= formatCurrency(p.total) %></td>
+
+            <td class="text-nowrap col-money">
+              <%= (p.anticipo !== null && p.anticipo !== undefined && Number(p.anticipo) !== 0)
+                ? formatCurrency(p.anticipo)
+                : '$0.00' %>
+            </td>
+
+            <td class="text-nowrap col-money">
+              <%= (p.resto !== null && p.resto !== undefined && Number(p.resto) !== 0)
+                ? formatCurrency(p.resto)
+                : '-' %>
+            </td>
+
+            <td class="text-nowrap col-enc"><%= p.encargado || '-' %></td>
+
+            <td class="text-nowrap col-date"><%= formatDateYMD(p.fecha_pedido) %></td>
+            <td class="text-nowrap col-date"><%= formatDateYMD(p.fecha_entrega) %></td>
+
+            <td class="text-nowrap col-yn">
+              <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
+                <%= p.trabajo_impreso ? 'Sí' : 'No' %>
+              </span>
+            </td>
+
+            <td class="text-nowrap col-yn">
+              <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
+                <%= p.trabajo_entregado ? 'Sí' : 'No' %>
+              </span>
+            </td>
+
+            <td class="col-obs">
+              <div class="cell-collapse" title="<%= p.observaciones || '' %>">
+                <%= p.observaciones || '-' %>
+              </div>
+            </td>
+
+            <td class="col-carpeta">
+              <div class="cell-collapse"><%= p.archivo_carpeta || '-' %></div>
+            </td>
+
+            <td class="col-archivo">
+              <div class="cell-collapse"><%= p.archivo_nombre || '-' %></div>
+            </td>
+
+            <td class="col-pc">
+              <div class="cell-collapse"><%= p.archivo_computadora || '-' %></div>
+            </td>
+
+            <td class="text-nowrap col-estado">
+              <span class="badge bg-success">Terminado</span>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <% pedidos.forEach(p => { %>
-            <tr>
-              <td class="text-nowrap sticky-folio"><%= p.folio_num || '-' %></td>
-              <td class="text-nowrap"><%= p.nombre_cliente || '-' %></td>
-              <td class="text-nowrap"><%= p.telefono_cliente || '-' %></td>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-              <td class="admin-col-desc">
-  <%
-    // Normalizar items_json
-    let items = [];
-    try {
-      if (Array.isArray(p.items_json)) items = p.items_json;
-      else if (typeof p.items_json === 'string') items = JSON.parse(p.items_json);
-    } catch (e) { items = []; }
-
-    // Filtrar válidos
-    const validItems = (items || []).filter(i =>
-      i &&
-      Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
-      String(i.descripcion || '').trim() !== '' &&
-      Number.isFinite(Number(i.total)) && Number(i.total) >= 0
-    );
-
-    // Texto con saltos de línea
-    const itemsTextHtml = validItems
-      .map(i => `${Number(i.cantidad)} ${String(i.descripcion).trim()}`)
-      .join('<br>');
-  %>
-
-  <% if (validItems.length > 0) { %>
-    <span><%- itemsTextHtml %></span>
-  <% } else if (p.descripcion_pedido) { %>
-    <span title="<%= p.descripcion_pedido %>">
-      <%= p.descripcion_pedido.length > 90 ? p.descripcion_pedido.slice(0, 90) + '…' : p.descripcion_pedido %>
-    </span>
-  <% } else { %>
-    -
-  <% } %>
-</td>
-
-              <td class="text-nowrap"><%= p.sucursal || '-' %></td>
-
-              <!-- ✅ NUEVOS (como en /admin) -->
-              <td class="text-nowrap"><%= p.requiere_factura ? 'Sí' : 'No' %></td>
-
-              <td class="text-nowrap"><%= formatCurrency(p.total) %></td>
-
-              <td class="text-nowrap">
-                <%= (p.anticipo !== null && p.anticipo !== undefined && Number(p.anticipo) !== 0)
-                  ? formatCurrency(p.anticipo)
-                  : '$0.00' %>
-              </td>
-
-              <td class="text-nowrap">
-                <%= (p.resto !== null && p.resto !== undefined && Number(p.resto) !== 0)
-                  ? formatCurrency(p.resto)
-                  : '-' %>
-              </td>
-
-              <td class="text-nowrap"><%= p.encargado || '-' %></td>
-
-              <td class="text-nowrap"><%= formatDateYMD(p.fecha_pedido) %></td>
-              <td class="text-nowrap"><%= formatDateYMD(p.fecha_entrega) %></td>
-
-              <td class="text-nowrap">
-                <span class="badge <%= p.trabajo_impreso ? 'bg-success' : 'bg-secondary' %>">
-                  <%= p.trabajo_impreso ? 'Sí' : 'No' %>
-                </span>
-              </td>
-
-              <td class="text-nowrap">
-                <span class="badge <%= p.trabajo_entregado ? 'bg-success' : 'bg-secondary' %>">
-                  <%= p.trabajo_entregado ? 'Sí' : 'No' %>
-                </span>
-              </td>
-
-              <td class="admin-col-obs">
-                <span title="<%= p.observaciones || '' %>"><%= shortText(p.observaciones, 40) %></span>
-              </td>
-
-              <td class="text-nowrap"><%= p.archivo_carpeta || '-' %></td>
-              <td class="text-nowrap"><%= p.archivo_nombre || '-' %></td>
-              <td class="text-nowrap"><%= p.archivo_computadora || '-' %></td>
-
-              <td class="text-nowrap">
-                <span class="badge bg-success">Terminado</span>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
 
     <!-- BOTONES SCROLL abajo -->
     <div class="table-nav" data-table-nav="historial-bottom">
