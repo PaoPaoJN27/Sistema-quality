@@ -429,6 +429,18 @@
   setTimeout(updateNavs, 600);
 })();
 </script>
+<script>
+(function () {
+  // ✅ Expandir/contraer texto (delegado para que siempre funcione)
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('#historialTableWrapper .cell-collapse');
+    if (!el) return;
+
+    el.classList.toggle('is-open');
+  });
+})();
+</script>
+
 
 
 <%- include('../partials/footer') %>

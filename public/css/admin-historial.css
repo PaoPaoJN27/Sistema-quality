@@ -231,6 +231,21 @@
   margin: .25rem 0 .6rem 0;
 }
 
+/* ======================================================
+   ✅ FIX EXPAND (CLAVE)
+   Cuando .cell-collapse está en is-open, el TD deja de recortar
+   (sin esto, overflow:hidden del td "mata" el expand)
+   ====================================================== */
+#historialTableWrapper td:has(.cell-collapse.is-open){
+  overflow: visible !important;
+}
+#historialTableWrapper td:has(.cell-collapse.is-open) .cell-collapse{
+  display: block !important;
+  white-space: normal !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+}
+
 /* Por si quieres que en móvil siempre aparezcan, descomenta:
 @media (max-width: 768px){
   .table-nav{ display:flex; }
