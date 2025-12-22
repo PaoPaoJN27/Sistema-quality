@@ -358,77 +358,68 @@
   const wrapper = document.getElementById('historialTableWrapper');
   if (!wrapper) return;
 
-  const scaleBox = wrapper.querySelector('.admin-table-scale');
-  const navs = document.querySelectorAll('.table-nav');
-  if (!scaleBox || !navs.length) return;
+  // ✅ SOLO flechas del historial
+  const navs = document.querySelectorAll('.table-nav[data-table-nav^="historial"]');
+  if (!navs.length) return;
 
-  function getScaleX(el) {
-    const tr = getComputedStyle(el).transform;
-    if (!tr || tr === 'none') return 1;
+  const STEP = () => Math.max(260, Math.floor(wrapper.clientWidth * 0.75));
 
-    // matrix(a, b, c, d, tx, ty)  -> a = scaleX
-    const m = tr.match(/^matrix\((.+)\)$/);
-    if (m) return parseFloat(m[1].split(',')[0]) || 1;
-
-    // matrix3d(...) -> [0] = scaleX
-    const m3 = tr.match(/^matrix3d\((.+)\)$/);
-    if (m3) return parseFloat(m3[1].split(',')[0]) || 1;
-
-    return 1;
+  function hasOverflowX(el) {
+    return el.scrollWidth > el.clientWidth + 1;
   }
 
-  function hasRealOverflow() {
-    const scale = getScaleX(scaleBox);
+  function updateNav(nav) {
+    const btnL = nav.querySelector('[data-scroll="left"]');
+    const btnR = nav.querySelector('[data-scroll="right"]');
 
-    // scrollWidth NO se escala, pero visualmente sí → multiplicamos por scale
-    const effectiveContentWidth = scaleBox.scrollWidth * scale;
-    const visibleWidth = wrapper.clientWidth;
+    const overflow = hasOverflowX(wrapper);
 
-    return effectiveContentWidth > visibleWidth + 2;
+    // ✅ si NO hay overflow -> se oculta
+    nav.style.display = overflow ? 'flex' : 'none';
+    if (!overflow) return;
+
+    const atStart = wrapper.scrollLeft <= 0;
+    const atEnd = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
+
+    if (btnL) btnL.disabled = atStart;
+    if (btnR) btnR.disabled = atEnd;
   }
 
-  function updateNavs() {
-    const show = hasRealOverflow();
-    navs.forEach(nav => {
-      nav.style.display = show ? 'flex' : 'none';
-
-      // si quieres deshabilitar botones en extremos:
-      const btnL = nav.querySelector('[data-scroll="left"]');
-      const btnR = nav.querySelector('[data-scroll="right"]');
-      if (btnL && btnR && show) {
-        btnL.disabled = wrapper.scrollLeft <= 0;
-        btnR.disabled = Math.ceil(wrapper.scrollLeft + wrapper.clientWidth) >= wrapper.scrollWidth;
-      }
-    });
+  function updateAll() {
+    navs.forEach(updateNav);
   }
 
-  navs.forEach(nav => {
+  navs.forEach((nav) => {
     nav.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-scroll]');
       if (!btn) return;
 
-      const dir = btn.dataset.scroll;
-      const step = Math.max(260, Math.floor(wrapper.clientWidth * 0.7));
+      const dir = btn.getAttribute('data-scroll');
+      const amount = STEP();
 
       wrapper.scrollBy({
-        left: dir === 'left' ? -step : step,
+        left: dir === 'left' ? -amount : amount,
         behavior: 'smooth'
       });
     });
   });
 
-  window.addEventListener('resize', updateNavs);
-  wrapper.addEventListener('scroll', updateNavs);
+  wrapper.addEventListener('scroll', updateAll);
+  window.addEventListener('resize', updateAll);
+
+  // ✅ importante: esperar a que pinte/zoom aplique
+  updateAll();
+  setTimeout(updateAll, 50);
+  setTimeout(updateAll, 250);
 
   if ('ResizeObserver' in window) {
-    new ResizeObserver(updateNavs).observe(scaleBox);
+    const ro = new ResizeObserver(updateAll);
+    ro.observe(wrapper);
   }
-
-  updateNavs();
-  setTimeout(updateNavs, 150);
-  setTimeout(updateNavs, 600);
 })();
 </script>
+
+
 <script>
 (function () {
   // ✅ Expandir/contraer texto (delegado para que siempre funcione)
