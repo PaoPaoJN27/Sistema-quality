@@ -21,7 +21,7 @@
 
 /* ✅ “Zoom” visual SIN romper el overflow */
 #historialTableWrapper .admin-table-scale{
-  --admin-scale: .97; /* más grande, evita que se vea mini */
+  --admin-scale: .90 /* más grande, evita que se vea mini */
   transform: scale(var(--admin-scale));
   transform-origin: top left;
 
@@ -30,10 +30,10 @@
 }
 
 /* Ajustes suaves por tamaño */
-@media (min-width: 1700px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .98; } }
-@media (max-width: 1400px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .96; } }
-@media (max-width: 1280px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .95; } }
-@media (max-width: 1150px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .94; } }
+@media (min-width: 1700px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .93; } }
+@media (max-width: 1400px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .90; } }
+@media (max-width: 1280px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .88; } }
+@media (max-width: 1150px){ #historialTableWrapper .admin-table-scale{ --admin-scale: .86; } }
 
 /* Tablet/Móvil: sin scale para mejor UX */
 @media (max-width: 768px){
