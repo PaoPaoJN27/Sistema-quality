@@ -270,7 +270,12 @@
                   <% } %>
                 </td>
 
-                <td class="text-nowrap col-enc"><%= p.encargado || '-' %></td>
+                <td class="col-enc">
+                  <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                    <%= p.encargado || '-' %>
+                  </div>
+                </td>
+
 
                 <td class="text-nowrap col-date"><%= p.fecha_pedido ? formatDateYMD(p.fecha_pedido) : '-' %></td>
                 <td class="text-nowrap col-date"><%= p.fecha_entrega ? formatDateYMD(p.fecha_entrega) : '-' %></td>

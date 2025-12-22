@@ -252,7 +252,12 @@
                     : '-' %>
                 </td>
 
-                <td class="col-enc text-nowrap"><%= p.encargado || '-' %></td>
+                <td class="col-enc">
+                  <div class="cell-collapse js-toggle-cell" title="Click para ver completo">
+                    <%= p.encargado || '-' %>
+                  </div>
+                </td>
+
                 <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_pedido) %></td>
                 <td class="col-date text-nowrap"><%= formatDateYMD(p.fecha_entrega) %></td>
 
