@@ -104,7 +104,7 @@
   table-layout: fixed;
   border-collapse: separate !important;
   border-spacing: 0 !important;
-  font-size: .96rem;
+  font-size: .98rem;
   margin-bottom: 0 !important; /* ✅ sin margen abajo */
 }
 

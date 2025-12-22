@@ -47,7 +47,7 @@
    ✅ ESCALADO (IGUAL QUE PEDIDOS)
    ====================================================== */
 #historialTableWrapper .admin-table-scale{
-  --admin-scale: .80; /* 👈 aquí cambias el “look 80%” */
+  --admin-scale: .75; /* 👈 aquí cambias el “look 80%” */
 }
 
 /* ✅ CHROME/EDGE */
