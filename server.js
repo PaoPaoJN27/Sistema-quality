@@ -25,6 +25,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // para leer formularios HTML
 
+// ✅ Health check para Render (sin auth, sin redirects, responde 200 rápido)
+app.get('/healthz', (req, res) => {
+  res.status(200).send('ok');
+});
+
 // ====== Sesiones ======
 app.use(
   session({
@@ -99,13 +104,13 @@ app.get(
       error: error || '',
       msg: msg || '',
       folio: folio || '',
-      pedidoId: pedidoId || '' // ✅ para el botón del PDF oficial
+      pedidoId: pedidoId || '', // ✅ para el botón del PDF oficial
     });
   }
 );
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
