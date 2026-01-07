@@ -290,6 +290,10 @@
     /* ✅ el renglón de items se estira al alto real disponible */
     .items-row { height: 100%; }
 
+    /* ====== ✅ NUEVO: reducir tamaño si hay muchos items ====== */
+    .items-wrap.small table { font-size: 10px; }
+    .items-wrap.small th { font-size: 9px; }
+
     /* ====== Derecha: footer ====== */
     .right-footer {
       display: grid;
@@ -370,6 +374,9 @@
       font-size: 9px;
       text-transform: uppercase;
     }
+
+    /* ✅ evita cortes raros en PDF */
+    tr, td, th { page-break-inside: avoid; }
   </style>
 </head>
 
@@ -411,6 +418,13 @@
       if (Array.isArray(pedido?.items)) items = pedido.items;
       else items = JSON.parse(pedido?.items_json || '[]');
     } catch (e) { items = []; }
+
+    // ✅ límite + shrink
+    const maxItems = 18;               // límite duro
+    const shrinkFrom = 14;             // a partir de aquí baja fuente
+    const itemsCount = items.length;
+    const showItems = items.slice(0, maxItems);
+    const overflowCount = itemsCount > maxItems ? (itemsCount - maxItems) : 0;
 
     // ✅ Fechas fallback para columna Fecha
     const entrega = (pedido?.fecha_entrega ?? pedido?.entrega ?? pedido?.fechaEntrega ?? '').toString();
@@ -541,7 +555,7 @@
               </div>
             </div>
 
-            <div class="items-wrap">
+            <div class="items-wrap <%= (itemsCount > shrinkFrom) ? 'small' : '' %>">
               <table>
                 <thead>
                   <tr>
@@ -558,10 +572,10 @@
                     <!-- Cantidad -->
                     <td style="padding:0;">
                       <div style="height: 100%; display:flex; flex-direction:column;">
-                        <% if (items.length === 0) { %>
+                        <% if (showItems.length === 0) { %>
                           <div style="padding:2mm;">&nbsp;</div>
                         <% } else { %>
-                          <% items.forEach((it) => { %>
+                          <% showItems.forEach((it) => { %>
                             <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
                               <%= it?.cantidad ?? '' %>
                             </div>
@@ -573,10 +587,10 @@
                     <!-- Descripción -->
                     <td style="padding:0;">
                       <div style="height: 100%; display:flex; flex-direction:column;">
-                        <% if (items.length === 0) { %>
+                        <% if (showItems.length === 0) { %>
                           <div style="padding:2mm;"><%= pedido?.descripcion_pedido ?? '' %></div>
                         <% } else { %>
-                          <% items.forEach((it) => { %>
+                          <% showItems.forEach((it) => { %>
                             <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
                               <%= it?.descripcion ?? '' %>
                             </div>
@@ -588,10 +602,10 @@
                     <!-- Fecha -->
                     <td style="padding:0;">
                       <div style="height: 100%; display:flex; flex-direction:column;">
-                        <% if (items.length === 0) { %>
+                        <% if (showItems.length === 0) { %>
                           <div style="padding:2mm;"><%= entrega %></div>
                         <% } else { %>
-                          <% items.forEach(() => { %>
+                          <% showItems.forEach(() => { %>
                             <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25;">
                               <%= fechaCell %>
                             </div>
@@ -603,14 +617,20 @@
                     <!-- Total -->
                     <td style="padding:0;">
                       <div style="height: 100%; display:flex; flex-direction:column; align-items:stretch;">
-                        <% if (items.length === 0) { %>
+                        <% if (showItems.length === 0) { %>
                           <div style="padding:2mm;">&nbsp;</div>
                         <% } else { %>
-                          <% items.forEach((it) => { %>
+                          <% showItems.forEach((it) => { %>
                             <div style="padding:2mm; border-bottom:1px solid #ddd; line-height:1.25; text-align:right;">
                               <%= (it?.total != null && it?.total !== '') ? Number(it.total).toFixed(2) : '' %>
                             </div>
                           <% }) %>
+                        <% } %>
+
+                        <% if (overflowCount > 0) { %>
+                          <div style="margin-top:auto; padding:2mm; font-size:9px; text-align:right; font-style:italic;">
+                            + <%= overflowCount %> artículos más
+                          </div>
                         <% } %>
                       </div>
                     </td>
