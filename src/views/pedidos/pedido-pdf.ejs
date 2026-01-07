@@ -26,7 +26,8 @@
 
       /* ✅ AJUSTE para que quepa en 1 hoja */
       --specH: 88mm;  /* antes 94mm */
-      --itemsH: 58mm; /* antes 68mm */
+
+      /* ❌ YA NO usamos --itemsH fijo (la tabla se auto-ajusta al espacio disponible) */
     }
 
     /* ====== HEADER SUPERIOR (NO cambiar tamaño) ====== */
@@ -195,16 +196,24 @@
       margin-bottom: 1.5mm; /* antes 2mm */
     }
 
-    /* ====== DERECHA: empuja contenido hacia abajo por header ====== */
+    /* ====== DERECHA (✅ CAMBIO: grid fijo header / tabla / footer) ====== */
     .right-wrap {
-      padding-top: var(--topH);
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--topH);
+      bottom: 0;
+
+      display: grid;
+      grid-template-rows: auto 1fr auto; /* header, tabla, footer */
+      gap: 1mm;
     }
 
     /* ====== Derecha: Encabezado ====== */
     .right-head {
       border: 1px solid #111;
       padding: 2.5mm; /* antes 3mm */
-      margin-bottom: 1mm; /* antes 2mm */
+      margin-bottom: 0; /* ya no */
     }
     .right-head .topline {
       display: flex;
@@ -252,6 +261,10 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 11px;
+
+      /* ✅ la tabla ocupa todo el alto disponible dentro del "1fr" */
+      height: 100%;
+      table-layout: fixed;
     }
     th, td {
       border: 1px solid #111;
@@ -267,11 +280,15 @@
     .items-wrap {
       border: 1px solid #111;
       padding: 0;
-      margin-bottom: 1mm; /* antes 2mm */
+      margin-bottom: 0;
+
+      /* ✅ importante: la tabla nunca empuja a otra hoja */
+      overflow: hidden;
+      height: 100%;
     }
 
-    /* ✅ más chico para 1 hoja */
-    .items-row { height: var(--itemsH); }
+    /* ✅ el renglón de items se estira al alto real disponible */
+    .items-row { height: 100%; }
 
     /* ====== Derecha: footer ====== */
     .right-footer {
@@ -332,9 +349,7 @@
       font-size: 9.5px;
       line-height: 1.2;
     }
-    .gh-right {
-      text-align: right;
-    }
+    .gh-right { text-align: right; }
 
     .doc-meta-right {
       font-size: 9.5px;
@@ -542,7 +557,7 @@
 
                     <!-- Cantidad -->
                     <td style="padding:0;">
-                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                      <div style="height: 100%; display:flex; flex-direction:column;">
                         <% if (items.length === 0) { %>
                           <div style="padding:2mm;">&nbsp;</div>
                         <% } else { %>
@@ -557,7 +572,7 @@
 
                     <!-- Descripción -->
                     <td style="padding:0;">
-                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                      <div style="height: 100%; display:flex; flex-direction:column;">
                         <% if (items.length === 0) { %>
                           <div style="padding:2mm;"><%= pedido?.descripcion_pedido ?? '' %></div>
                         <% } else { %>
@@ -572,7 +587,7 @@
 
                     <!-- Fecha -->
                     <td style="padding:0;">
-                      <div style="height: var(--itemsH); display:flex; flex-direction:column;">
+                      <div style="height: 100%; display:flex; flex-direction:column;">
                         <% if (items.length === 0) { %>
                           <div style="padding:2mm;"><%= entrega %></div>
                         <% } else { %>
@@ -587,7 +602,7 @@
 
                     <!-- Total -->
                     <td style="padding:0;">
-                      <div style="height: var(--itemsH); display:flex; flex-direction:column; align-items:stretch;">
+                      <div style="height: 100%; display:flex; flex-direction:column; align-items:stretch;">
                         <% if (items.length === 0) { %>
                           <div style="padding:2mm;">&nbsp;</div>
                         <% } else { %>
