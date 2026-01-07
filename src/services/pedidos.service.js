@@ -67,6 +67,10 @@ function sanitizeItemDesc(desc) {
 /**
  * Crear pedido (módulo empleado)
  * folio_num lo asigna la BD (sequence). NO se calcula aquí.
+ *
+ * ✅ Opción A:
+ * - NO mandar fecha_pedido desde Node
+ * - Dejar que la BD ponga el default (ya configurado en Supabase con timezone MX)
  */
 export async function crearPedidoService(datos, usuarioSesion) {
   console.log('=== CREAR PEDIDO SERVICE ===');
@@ -96,7 +100,7 @@ export async function crearPedidoService(datos, usuarioSesion) {
     observaciones,
     archivo_carpeta,
     archivo_nombre,
-    archivo_computadora
+    archivo_computadora,
   } = datos;
 
   // ✅ ya es seguro loggear recibe aquí (después del destructuring)
@@ -113,17 +117,20 @@ export async function crearPedidoService(datos, usuarioSesion) {
   }
 
   const itemsArr = (parsedItems || [])
-    .filter(i =>
-      i &&
-      Number.isFinite(Number(i.cantidad)) && Number(i.cantidad) > 0 &&
-      String(i.descripcion || '').trim() !== '' &&
-      Number.isFinite(Number(i.total)) && Number(i.total) >= 0
+    .filter(
+      (i) =>
+        i &&
+        Number.isFinite(Number(i.cantidad)) &&
+        Number(i.cantidad) > 0 &&
+        String(i.descripcion || '').trim() !== '' &&
+        Number.isFinite(Number(i.total)) &&
+        Number(i.total) >= 0,
     )
-    .map(i => ({
+    .map((i) => ({
       cantidad: Number(i.cantidad),
       // ✅ aquí se limpia el "1)" y el "(1)" y el "— $..."
       descripcion: sanitizeItemDesc(i.descripcion),
-      total: Math.round(Number(i.total) * 100) / 100
+      total: Math.round(Number(i.total) * 100) / 100,
     }));
 
   // ✅ obligar a que exista al menos 1 partida válida
@@ -165,9 +172,6 @@ export async function crearPedidoService(datos, usuarioSesion) {
   const nombreTxt = extraOn ? cleanText(archivo_nombre) : null;
   const pcTxt = extraOn ? cleanText(archivo_computadora) : null;
 
-  const hoyLocal = new Date();
-const fechaLocal = hoyLocal.toLocaleDateString('en-CA');
-
   // ================================
   // 4) Insertar pedido
   // ================================
@@ -177,7 +181,9 @@ const fechaLocal = hoyLocal.toLocaleDateString('en-CA');
     descripcion_pedido: cleanText(descripcion_pedido),
 
     sucursal: cleanText(sucursal),
-    fecha_pedido: fechaLocal,
+
+    // ✅ Opción A: NO mandar fecha_pedido
+    // La BD la asigna con el DEFAULT (timezone MX ya configurado).
     fecha_entrega,
     estado: 'No iniciado',
 
@@ -200,7 +206,7 @@ const fechaLocal = hoyLocal.toLocaleDateString('en-CA');
     archivo_computadora: pcTxt,
 
     // ✅ items (jsonb)
-    items_json: itemsArr
+    items_json: itemsArr,
   };
 
   console.log('Payload a insertar en pedidos:', payload);
